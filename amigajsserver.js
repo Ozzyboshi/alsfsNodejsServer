@@ -177,6 +177,19 @@ app.post('/createEmptyFile', jsonParser , function (req, res) {
 	});
 });
 
+/********** Start create empty drawer **********/
+app.post('/createEmptyDrawer', jsonParser , function (req, res) {
+	
+	RECVFUNCT=recvFunctions.createEmptyDrawerRecv;
+	CUSTOMDATA={"res":res,"amigaDrawername":req.body.amigadrawername,"port":port};
+
+	var cmdWrite = String.fromCharCode(109)+String.fromCharCode(107)+String.fromCharCode(100)+String.fromCharCode(114)+String.fromCharCode(97)+String.fromCharCode(119)+String.fromCharCode(101)+String.fromCharCode(114)+String.fromCharCode(4);
+	port.write(cmdWrite,function () {
+		console.log("Create Drawer request sent");
+		return ;
+	});
+});
+
 app.get('/exit', function (req, res) {
 
 	var cmd = String.fromCharCode(101)+String.fromCharCode(120)+String.fromCharCode(105)+String.fromCharCode(116)+String.fromCharCode(4);

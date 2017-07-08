@@ -250,6 +250,38 @@ module.exports = {
 		console.log("File not created");
 		customdata.res.end( "KO" );
 	}
+  },
+  createEmptyDrawerRecv: function (data,customdata) {
+	console.log('aaaa Richiesta: #' + data+"##");
+	console.log("amiga file name: "+customdata.amigaFilename);
+
+	// Send drawer name
+	if (data[0]==49 && data[1]==0 && data[2]==3)
+	{
+		console.log("Sending file name to create "+customdata.amigaFilename+"...");
+		var cmd="";			
+		for (var i=0;i<customdata.amigaDrawername.length;i++)
+		{
+			cmd+=customdata.amigaDrawername[i];
+		}
+		cmd+=String.fromCharCode(4);
+			
+		customdata.port.write(cmd,function () {
+			console.log("File name sent to create empty file");
+		});
+			
+	}
+	// Send binary data
+	else if (data[0]==79 && data[1]==75 && data[2]==0 && data[3]==3)
+	{
+		console.log("Drawer created");
+		customdata.res.end( "OK" );
+	}
+	else
+	{
+		console.log("Drawer not created");
+		customdata.res.end( "KO" );
+	}
   }
 };
 
