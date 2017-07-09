@@ -190,6 +190,20 @@ app.post('/createEmptyDrawer', jsonParser , function (req, res) {
 	});
 });
 
+/********** Start create empty drawer **********/
+app.put('/renameFileOrDrawer', jsonParser , function (req, res) {
+	
+	RECVFUNCT=recvFunctions.renameFileOrDrawerRecv;
+	CUSTOMDATA={"res":res,"amigaNewFilename":req.body.amiganewfilename,"amigaOldFilename":req.body.amigaoldfilename,"port":port};
+
+	var cmdWrite = String.fromCharCode(114)+String.fromCharCode(101)+String.fromCharCode(110)+String.fromCharCode(97)+String.fromCharCode(109)+String.fromCharCode(101)+String.fromCharCode(4);
+	port.write(cmdWrite,function () {
+		console.log("Rename File or Drawer request sent");
+		return ;
+	});
+});
+
+
 app.get('/exit', function (req, res) {
 
 	var cmd = String.fromCharCode(101)+String.fromCharCode(120)+String.fromCharCode(105)+String.fromCharCode(116)+String.fromCharCode(4);

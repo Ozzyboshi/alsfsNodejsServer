@@ -280,6 +280,56 @@ module.exports = {
 	else
 	{
 		console.log("Drawer not created");
+		customdata.res.status(404);
+		customdata.res.end( "KO" );
+	}
+  },
+  renameFileOrDrawerRecv: function (data,customdata) {
+	console.log('aaaa Richiesta: #' + data+"##");
+	console.log("amiga file name: "+customdata.amigaFilename);
+
+	// Send old name
+	if (data[0]==49 && data[1]==0 && data[2]==3)
+	{
+		console.log("Sending old filename "+customdata.amigaOldFilename+"...");
+		var cmd="";			
+		for (var i=0;i<customdata.amigaOldFilename.length;i++)
+		{
+			cmd+=customdata.amigaOldFilename[i];
+		}
+		cmd+=String.fromCharCode(4);
+			
+		customdata.port.write(cmd,function () {
+			console.log("File name sent to create empty file");
+		});
+			
+	}
+	// Send old name
+	else if (data[0]==50 && data[1]==0 && data[2]==3)
+	{
+		console.log("Sending new filename "+customdata.amigaNewFilename+"...");
+		var cmd="";			
+		for (var i=0;i<customdata.amigaNewFilename.length;i++)
+		{
+			cmd+=customdata.amigaNewFilename[i];
+		}
+		cmd+=String.fromCharCode(4);
+			
+		customdata.port.write(cmd,function () {
+			console.log("File name sent to create empty file");
+		});
+			
+	}
+	// Send binary data
+	else if (data[0]==79 && data[1]==75 && data[2]==0 && data[3]==3)
+	{
+		console.log("File or Drawer renamed");
+		customdata.res.end( "OK" );
+	}
+	else
+	{
+		console.log("File Or Drawer not renamed");
+		customdata.res.status(404);
 		customdata.res.end( "KO" );
 	}
   }
