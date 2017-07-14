@@ -1,6 +1,6 @@
 // recvFunct.js
 // ========
-
+var server = require('./amigajsserver');
 var fs = require('fs');
 
 module.exports = {
@@ -331,6 +331,99 @@ module.exports = {
 		console.log("File Or Drawer not renamed");
 		customdata.res.status(404);
 		customdata.res.end( "KO" );
+	}
+  },
+  readFileRecv: function (data,customdata) {
+	//console.log('aaaa Richiesta: #' + data+"##");
+	//console.log("amiga file name: "+customdata.amigaFilename);
+
+	// Send old name
+	if (data[0]==49 && data[1]==0 && data[2]==3)
+	{
+		console.log("Sending filename "+customdata.amigaFilename+"...");
+		var cmd="";			
+		for (var i=0;i<customdata.amigaFilename.length;i++)
+		{
+			cmd+=customdata.amigaFilename[i];
+		}
+		cmd+=String.fromCharCode(4);
+			
+		customdata.port.write(cmd,function () {
+			console.log("File name sent to read file");
+		});
+			
+	}
+	// Send size
+	else if (data[0]==50 && data[1]==0 && data[2]==3)
+	{
+		console.log("Sending size "+customdata.size+"...");
+		var cmd="";			
+		for (var i=0;i<customdata.size.length;i++)
+		{
+			cmd+=customdata.size[i];
+		}
+		cmd+=String.fromCharCode(4);
+			
+		customdata.port.write(cmd,function () {
+			console.log("Size sent");
+		});
+			
+	}
+	// Send offset
+	else if (data[0]==51 && data[1]==0 && data[2]==3)
+	{
+		console.log("Sending offset "+customdata.offset+"...");
+		var cmd="";			
+		for (var i=0;i<customdata.offset.length;i++)
+		{
+			cmd+=customdata.offset[i];
+		}
+		cmd+=String.fromCharCode(4);
+			
+		customdata.port.write(cmd,function () {
+			console.log("Offset sent");
+		});		
+	}
+	else
+	{
+		var cmd="";
+		for (var i=0;i<data.length-1;i++)
+			cmd+=String.fromCharCode(data[i]);
+		console.log("File data received length: "+cmd.length);
+		customdata.res.status(200);
+		customdata.res.end( cmd );
+		server.TERMINAL_READY=true;
+		console.log("HTTP RESPONSE SENT!!");
+	}
+  },
+  delayRecv: function (data,customdata) {
+	console.log('aaaa Richiesta: #' + data+"##");
+
+	// Send old name
+	if (data[0]==49 && data[1]==0 && data[2]==3)
+	{
+		console.log("Sending delay "+customdata.delay+"...");
+		var cmd="";			
+		for (var i=0;i<customdata.delay.length;i++)
+		{
+			cmd+=customdata.delay[i];
+		}
+		cmd+=String.fromCharCode(4);
+			
+		customdata.port.write(cmd,function () {
+			console.log("Delay value sent");
+		});
+			
+	}
+	else
+	{
+		var cmd="";
+		for (var i=0;i<data.length-1;i++)
+			cmd+=String.fromCharCode(data[i]);
+		console.log("Delay received: "+cmd);
+		customdata.res.status(200);
+		customdata.res.end( cmd );
+		server.TERMINAL_READY=true;
 	}
   }
 };

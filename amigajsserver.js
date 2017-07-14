@@ -2,6 +2,8 @@ var express = require('express');
 var SerialPort = require('serialport');
 var bodyParser = require('body-parser')
 var fs = require('fs');
+var Queue = require('better-queue');
+const uuidv4 = require('uuid/v4');
 
 var app = express();
 var jsonParser = bodyParser.json()
@@ -13,6 +15,24 @@ var LISTVOLUMESCALLED=0;
 var STORECALLED=0;
 var LISTCONTENTCALLED=0;
 var STATCONTENTCALLED=0;
+
+//var TERMINAL_READY=true;
+exports.TERMINAL_READY = true;
+
+// Initialize the task queuer manager with retry each second
+var taskQueueManager = new Queue(function (task, cb) 
+{
+	task.next();
+	cb();
+},
+{
+	precondition: function (cb) 
+	{
+		console.log("Terminale "+exports.TERMINAL_READY);
+		cb(null,exports.TERMINAL_READY);
+	},
+	preconditionRetryTimeout: 5000
+});
 
 
 if (process.argv.length<4) {console.log("Usage: amigajsserver serialfile ip_to_bind (ex. amigajsserver /dev/ttyUSB0 192.168.137.3)");process.exit(1);}
@@ -64,7 +84,7 @@ if (process.argv.length==5 && process.argv[4]=="-bootstrap")
 					{
 						command="cat volumes6 > /dev/virtualcom0";
 						//console.log("Mandoooo "+command);
-						console.log("Set hardware control flow on your amiga serial preferences then type ram:volumes6 on your amiga and then press c in this terminal to exit");
+						console.log("type ram:volumes6 on your amiga and then press c in this terminal to exit");
 						execSync(command);
 						stage=3;
 					}
@@ -95,6 +115,15 @@ port.on('data', function (data) {
 	RECVFUNCT(data,CUSTOMDATA);
 });
 
+var taskQueuer = function (req, res, next) {
+  console.log('Putting into queue task');
+  taskQueueManager.push({ id:uuidv4() ,next:next });
+
+  //next()
+}
+
+// Middleware used to queue tasks
+app.use(taskQueuer);
 
 // Web routing starts here
 /********** Start list volumes **********/
@@ -203,6 +232,31 @@ app.put('/renameFileOrDrawer', jsonParser , function (req, res) {
 	});
 });
 
+/********** Start read amiga file **********/
+app.get('/readFile', jsonParser , function (req, res) {
+	exports.TERMINAL_READY=false;
+	RECVFUNCT=recvFunctions.readFileRecv;
+	CUSTOMDATA={"res":res,"amigaFilename":req.body.amigafilename,"size":req.body.size,"offset":req.body.offset,"port":port};
+
+	var cmdWrite = String.fromCharCode(114)+String.fromCharCode(101)+String.fromCharCode(97)+String.fromCharCode(100)+String.fromCharCode(102)+String.fromCharCode(105)+String.fromCharCode(108)+String.fromCharCode(101)+String.fromCharCode(4);
+	port.write(cmdWrite,function () {
+		console.log("Read File request sent");
+		return ;
+	});
+});
+
+/********** Start delay **********/
+app.get('/delay', jsonParser , function (req, res) {
+	exports.TERMINAL_READY=false;
+	RECVFUNCT=recvFunctions.delayRecv;
+	CUSTOMDATA={"res":res,"delay":req.body.delay,"port":port};
+
+	var cmdWrite = String.fromCharCode(100)+String.fromCharCode(101)+String.fromCharCode(108)+String.fromCharCode(97)+String.fromCharCode(121)+String.fromCharCode(4);
+	port.write(cmdWrite,function () {
+		console.log("Delay request sent");
+		return ;
+	});
+});
 
 app.get('/exit', function (req, res) {
 
