@@ -51,7 +51,7 @@ if (process.argv.length==5 && process.argv[4]=="-bootstrap")
 		var exec = require('child_process').exec;
 		var execSync = require('child_process').execSync;
 		var command="stty 9600 -parenb cs8 crtscts -ixon -ixoff raw iutf8  > "+process.argv[2]+" && cat receive.rexx > "+process.argv[2];
-		var command="cat receive.rexx > /dev/virtualcom0";
+		var command="cat receive.rexx > "+process.argv[2];
   		var keypress = require('keypress');
 			keypress(process.stdin);
 			process.stdin.on('keypress', function (ch, key) 
@@ -73,7 +73,7 @@ if (process.argv.length==5 && process.argv[4]=="-bootstrap")
 					{
 						for (var i=0;i<16;i++)
 						{
-							command="echo '1234567890' > /dev/virtualcom0";
+							command="echo '1234567890' > "+process.argv[2];
 							//console.log("Send "+command);
 							execSync(command);
 						}
@@ -82,7 +82,7 @@ if (process.argv.length==5 && process.argv[4]=="-bootstrap")
 					}
 					else if (stage==2)
 					{
-						command="cat volumes6 > /dev/virtualcom0";
+						command="cat volumes6 > "+process.argv[2];
 						//console.log("Mandoooo "+command);
 						console.log("type ram:volumes6 on your amiga and then press c in this terminal to exit");
 						execSync(command);
