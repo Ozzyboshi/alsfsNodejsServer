@@ -389,6 +389,7 @@ module.exports = {
 		var cmd="";
 		for (var i=0;i<data.length-1;i++)
 			cmd+=String.fromCharCode(data[i]);
+		console.log("comando: "+cmd);
 		console.log("File data received length: "+cmd.length);
 		customdata.res.status(200);
 		customdata.res.end( cmd );

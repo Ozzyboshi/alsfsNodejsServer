@@ -104,7 +104,7 @@ else
 
 console.log("Opening "+process.argv[2]);
 // versione per amiga reale var port = new SerialPort(process.argv[2],{baudRate:19200,dataBits:8,stopBits:1,parity:"none",rtscts:true,bufferSize:4096,autoOpen: true,parser: SerialPort.parsers.byteDelimiter([3])});
-/* versione per amiga vertuale */ var port = new SerialPort(process.argv[2],{baudRate:9600,dataBits:8,stopBits:1,parity:"none",rtscts:true,xon:true,xoff:true,bufferSize:4096,autoOpen: true,parser: SerialPort.parsers.byteDelimiter([3])});
+/* versione per amiga vertuale */ var port = new SerialPort(process.argv[2],{baudRate:19200,dataBits:8,stopBits:1,parity:"none",rtscts:true,xon:true,xoff:true,bufferSize:4096,autoOpen: true,parser: SerialPort.parsers.byteDelimiter([3])});
 // End of bootstrap mode
 var amigaCmd="";
 var Volumes="";
@@ -281,5 +281,6 @@ var server = app.listen(8081,process.argv[3], function () {
 
   console.log("Example app listening at http://%s:%s", host, port)
 
-})
+});
+server.timeout = 0;
 }
