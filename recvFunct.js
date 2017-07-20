@@ -213,10 +213,16 @@ module.exports = {
 				else
 				{
 					console.log("Binary data sent");
-					customdata.res.end( "OK" );
+					// customdata.res.end( "OK" );
 				}
 			});
 		}
+	 }
+	 else if (data[0]==53 && data[1]==0 && data[2]==3)
+	 {
+	 	console.log("Got confirmation that binary data is sent, http response outgoing...");
+	 	customdata.res.end( "OK" );
+	 	server.TERMINAL_READY=true;
 	 }
   },
   createEmptyFileRecv: function (data,customdata) {

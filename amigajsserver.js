@@ -182,7 +182,7 @@ app.post('/store', jsonParser , function (req, res) {
 
 /********** Start store binary data **********/
 app.post('/storeBinary', jsonParser , function (req, res) {
-	
+	exports.TERMINAL_READY=false;
 	RECVFUNCT=recvFunctions.storeBinaryRecv;
 	CUSTOMDATA={"res":res,"amigaFilename":req.body.amigafilename,"data":req.body.data,"size":req.body.size,"offset":req.body.offset,"dryRun":req.body.dryrun,"port":port};
 
