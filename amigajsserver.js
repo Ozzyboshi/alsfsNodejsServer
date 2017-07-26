@@ -44,7 +44,7 @@ if (process.argv.length<4) {console.log("Usage: amigajsserver serialfile ip_to_b
 if (process.argv.length==5 && process.argv[4]=="-bootstrap")
 {
 	var stage=0;
-	console.log("Type 'type ser: to ram: setup on your amiga' and press c");
+	console.log("Type 'type ser: to ram: setup on your amiga' and press a");
 	/*port.write(fs.readFileSync("./volumes6"),function () {
 		console.log("Bootstrap complete now type 'ram:setup' in your amiga");
 	});*/
@@ -60,13 +60,13 @@ if (process.argv.length==5 && process.argv[4]=="-bootstrap")
 				if (key && key.ctrl && key.name == 'c') {
 				 	process.stdin.pause();
     				}
-				if (key.name == 'c') {
+				if (key.name == 'a') {
 					console.log(stage);
 					if (stage==0)
 					{
 						console.log("Send "+command);
 						execSync(command);
-						console.log("Press ctrl+c on your amiga and then press c in this terminal");
+						console.log("Press ctrl+c on your amiga and then press a in this terminal");
 						stage=1;
 					}
 					else if (stage==1)
@@ -77,14 +77,13 @@ if (process.argv.length==5 && process.argv[4]=="-bootstrap")
 							//console.log("Send "+command);
 							execSync(command);
 						}
-						console.log("Type rx ram:setup on your amiga and then press c in this terminal");
+						console.log("Type rx ram:setup on your amiga and then press a in this terminal");
 						stage=2;
 					}
 					else if (stage==2)
 					{
 						command="cat volumes6 > "+process.argv[2];
-						//console.log("Mandoooo "+command);
-						console.log("type ram:volumes6 on your amiga and then press c in this terminal to exit");
+						console.log("type ram:volumes6 on your amiga and then press a in this terminal to exit");
 						execSync(command);
 						stage=3;
 					}
@@ -206,6 +205,19 @@ app.post('/createEmptyFile', jsonParser , function (req, res) {
 	});
 });
 
+/********** Start delete drawer or file **********/
+app.delete('/deleteFile', jsonParser , function (req, res) {
+	exports.TERMINAL_READY=false;
+	RECVFUNCT=recvFunctions.deleteFileRecv;
+	CUSTOMDATA={"res":res,"amigaFilename":req.body.amigafilename,"port":port};
+
+	var cmdWrite = String.fromCharCode(100)+String.fromCharCode(101)+String.fromCharCode(108)+String.fromCharCode(101)+String.fromCharCode(116)+String.fromCharCode(101)+String.fromCharCode(4);
+	port.write(cmdWrite,function () {
+		console.log("Delete File request sent");
+		return ;
+	});
+});
+
 /********** Start create empty drawer **********/
 app.post('/createEmptyDrawer', jsonParser , function (req, res) {
 	
@@ -219,7 +231,7 @@ app.post('/createEmptyDrawer', jsonParser , function (req, res) {
 	});
 });
 
-/********** Start create empty drawer **********/
+/********** Start rename file or drawer **********/
 app.put('/renameFileOrDrawer', jsonParser , function (req, res) {
 	
 	RECVFUNCT=recvFunctions.renameFileOrDrawerRecv;

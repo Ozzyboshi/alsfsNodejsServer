@@ -145,8 +145,8 @@ module.exports = {
   storeBinaryRecv: function (data,customdata) {
 	console.log('aaaa Richiesta: #' + data+"##");
 	console.log("amiga file name: "+customdata.amigaFilename);
-	console.log("Binary data base64 encoded: "+customdata.data);
-	console.log(data.toString().charCodeAt(0));
+	//console.log("Binary data base64 encoded: "+customdata.data);
+	//console.log(data.toString().charCodeAt(0));
 
 	// Send filename
 	if (data[0]==49 && data[1]==0 && data[2]==3)
@@ -430,6 +430,41 @@ module.exports = {
 		console.log("Delay received: "+cmd);
 		customdata.res.status(200);
 		customdata.res.end( cmd );
+		server.TERMINAL_READY=true;
+	}
+  },
+  deleteFileRecv: function (data,customdata) {
+	console.log('aaaa Richiesta: #' + data+"##");
+	console.log("amiga file name: "+customdata.amigaFilename);
+
+	// Send filename
+	if (data[0]==49 && data[1]==0 && data[2]==3)
+	{
+		console.log("Sending file name to delete "+customdata.amigaFilename+"...");
+		var cmd="";			
+		for (var i=0;i<customdata.amigaFilename.length;i++)
+		{
+			cmd+=customdata.amigaFilename[i];
+		}
+		cmd+=String.fromCharCode(4);
+			
+		customdata.port.write(cmd,function () {
+			console.log("File name sent to create empty file");
+		});
+			
+	}
+	// Send binary data
+	else if (data[0]==79 && data[1]==75 && data[2]==0 && data[3]==3)
+	{
+		console.log("File deleted");
+		customdata.res.end( "OK" );
+		server.TERMINAL_READY=true;
+	}
+	else
+	{
+		console.log("File not deleted");
+		customdata.res.status(404);
+		customdata.res.end( "KO" );
 		server.TERMINAL_READY=true;
 	}
   }
