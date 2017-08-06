@@ -138,6 +138,30 @@ app.get('/listVolumes', function (req, res) {
 	});
 });
 
+/********** Start list devices **********/
+app.get('/listDevices', function (req, res) {
+	
+	RECVFUNCT=recvFunctions.listDevicesRecv;
+	CUSTOMDATA=res;
+	var cmd = String.fromCharCode(100)+String.fromCharCode(101)+String.fromCharCode(118)+String.fromCharCode(105)+String.fromCharCode(99)+String.fromCharCode(101)+String.fromCharCode(4);
+	console.log("Sending "+cmd);	
+	port.write(cmd,function () {
+		console.log("List device sent");
+	});
+});
+
+/********** Start list devices **********/
+app.get('/listFloppies', function (req, res) {
+	
+	RECVFUNCT=recvFunctions.listFloppiesRecv;
+	CUSTOMDATA=res;
+	var cmd = String.fromCharCode(100)+String.fromCharCode(101)+String.fromCharCode(118)+String.fromCharCode(105)+String.fromCharCode(99)+String.fromCharCode(101)+String.fromCharCode(4);
+	console.log("Sending "+cmd);	
+	port.write(cmd,function () {
+		console.log("List floppies sent");
+	});
+});
+
 /********** Start list content of directory **********/
 app.get('/listContent', function (req, res) {
 	console.log("avvio listcontent");
@@ -253,6 +277,19 @@ app.get('/readFile', jsonParser , function (req, res) {
 	var cmdWrite = String.fromCharCode(114)+String.fromCharCode(101)+String.fromCharCode(97)+String.fromCharCode(100)+String.fromCharCode(102)+String.fromCharCode(105)+String.fromCharCode(108)+String.fromCharCode(101)+String.fromCharCode(4);
 	port.write(cmdWrite,function () {
 		console.log("Read File request sent");
+		return ;
+	});
+});
+
+/********** Start write amiga adf file **********/
+app.post('/writeAdf', jsonParser , function (req, res) {
+	exports.TERMINAL_READY=false;
+	RECVFUNCT=recvFunctions.writeAdfRecv;
+	CUSTOMDATA={"res":res,"trackDevice":req.body.trackDevice,"adfFilename":req.body.adfFilename,"start":req.body.start,"end":req.body.end,"port":port};
+
+	var cmdWrite = String.fromCharCode(119)+String.fromCharCode(114)+String.fromCharCode(105)+String.fromCharCode(116)+String.fromCharCode(101)+String.fromCharCode(97)+String.fromCharCode(100)+String.fromCharCode(102)+String.fromCharCode(4);
+	port.write(cmdWrite,function () {
+		console.log("Write adf File request sent");
 		return ;
 	});
 });

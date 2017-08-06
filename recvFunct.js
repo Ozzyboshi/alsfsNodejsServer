@@ -17,6 +17,40 @@ module.exports = {
 	arrayConverted = arrayConverted.filter(function(entry) { return entry.trim() != ''; });
 	customdata.end( JSON.stringify(arrayConverted ));
   },
+  listDevicesRecv: function (data,customdata) {
+    console.log('Devices: ' + data);
+	var cont=0;
+	var converted="";
+	while ( data[cont]!=3 )
+	{
+		if (data[cont]) converted+=String.fromCharCode(data[cont]);
+		cont++;
+	}
+	var arrayConverted = converted.split('\n');
+	arrayConverted = arrayConverted.filter(function(entry) { return entry.trim() != ''; });
+	customdata.end( JSON.stringify(arrayConverted ));
+  },
+  listFloppiesRecv: function (data,customdata) {
+    console.log('Floppies: ' + data);
+	var cont=0;
+	var converted="";
+	while ( data[cont]!=3 )
+	{
+		if (data[cont]) converted+=String.fromCharCode(data[cont]);
+		cont++;
+	}
+	var arrayConverted = converted.split('\n');
+	arrayConverted = arrayConverted.filter(function(entry) { return entry.trim() != ''; });
+	var arrayFloppy = [];
+	for (var i=0;i<arrayConverted.length;i++)
+	{
+		if (/^DF[0-9]$/.test(arrayConverted[i]))
+		{
+			arrayFloppy.push(arrayConverted[i]);
+		}
+	}
+	customdata.end( JSON.stringify(arrayFloppy));
+  },
   listContentRecv: function (data,customdata) {
     console.log('Content: ' + data);
 	if (data[0]==49 && data[1]==0 && data[2]==3)
@@ -397,6 +431,85 @@ module.exports = {
 			cmd+=String.fromCharCode(data[i]);
 		console.log("comando: "+cmd);
 		console.log("File data received length: "+cmd.length);
+		customdata.res.status(200);
+		customdata.res.end( cmd );
+		server.TERMINAL_READY=true;
+		console.log("HTTP RESPONSE SENT!!");
+	}
+  },
+  writeAdfRecv: function (data,customdata) {
+	console.log('aaaa Richiesta: #' + data+"##");
+	//console.log("amiga file name: "+customdata.amigaFilename);
+
+	// Send old name
+	if (data[0]==49 && data[1]==0 && data[2]==3)
+	{
+
+		const trackDevice = customdata.trackDevice;
+		console.log("Trackdevice "+trackDevice+"...");
+			
+		cmd=trackDevice.toString()+String.fromCharCode(4);
+		console.log("sto per mandare"+cmd);
+			
+		customdata.port.write(cmd,function () {
+			console.log("Trackdevice sent to read file");
+		});
+			
+	}
+	// Send start
+	else if (data[0]==50 && data[1]==0 && data[2]==3)
+	{
+
+		const start = customdata.start;
+
+		console.log("Sending start "+start+"...");
+		cmd=start.toString()+String.fromCharCode(4);
+		console.log("sto per mandare"+cmd);
+			
+		customdata.port.write(cmd,function () {
+			console.log("Start sent");
+		});
+			
+	}
+	// Send offset
+	else if (data[0]==51 && data[1]==0 && data[2]==3)
+	{
+		const end = customdata.end;
+
+		console.log("Sending end "+start+"...");
+		cmd=end.toString()+String.fromCharCode(4);
+		console.log("sto per mandare"+cmd);
+			
+		customdata.port.write(cmd,function () {
+			console.log("End sent");
+		});		
+	}
+	else if (data[0]==52)
+	{
+		var cmd="";
+		for (var i=0;i<data.length-1;i++)
+			cmd+=String.fromCharCode(data[i]);
+
+		var words = cmd.split(' ');
+		
+		console.log("Sending binary data for "+customdata.adfFilename);
+		buffer = new Buffer(parseInt(words[2]));
+
+		fs.open(customdata.adfFilename, 'r', function(err, fd) {
+			if (err) throw err;
+			fs.read(fd, buffer, 0 , parseInt(words[2]), parseInt(words[1]), function(err, nread) {
+				console.log("Offset : ",parseInt(words[1]));
+				console.log("Chunk size : ",parseInt(words[2]));
+				console.log(buffer);
+				console.log("BUffer stampato");
+				customdata.port.write(buffer,function () {
+					console.log("Binary data sent");
+				});
+			});
+		});
+	}
+	else
+	{
 		customdata.res.status(200);
 		customdata.res.end( cmd );
 		server.TERMINAL_READY=true;
