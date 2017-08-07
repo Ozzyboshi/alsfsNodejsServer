@@ -508,6 +508,13 @@ module.exports = {
 			});
 		});
 	}
+	else if (data[0]==54 && data[1]==0 && data[2]==3)
+	{
+		customdata.res.status(404);
+		customdata.res.end( '' );
+		server.TERMINAL_READY=true;
+		console.log("HTTP RESPONSE SENT!!");
+	}
 	else
 	{
 		customdata.res.status(200);
