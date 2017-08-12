@@ -294,6 +294,32 @@ app.post('/writeAdf', jsonParser , function (req, res) {
 	});
 });
 
+/********** Start floppy disk test **********/
+app.get('/readAdf', jsonParser , function (req, res) {
+	exports.TERMINAL_READY=false;
+	RECVFUNCT=recvFunctions.readAdfRecv;
+	CUSTOMDATA={"res":res,"trackDevice":req.body.trackDevice,"size":req.body.size,"offset":req.body.offset,"port":port};
+
+	var cmdRead = String.fromCharCode(114)+String.fromCharCode(101)+String.fromCharCode(97)+String.fromCharCode(100)+String.fromCharCode(97)+String.fromCharCode(100)+String.fromCharCode(102)+String.fromCharCode(4);
+	port.write(cmdRead,function () {
+		console.log("Read disk in drive request sent");
+		return ;
+	});
+});
+
+/********** Start floppy disk test **********/
+app.get('/testFloppyDisk', jsonParser , function (req, res) {
+	exports.TERMINAL_READY=false;
+	RECVFUNCT=recvFunctions.testFloppyDiskRecv;
+	CUSTOMDATA={"res":res,"trackDevice":req.body.trackDevice,"port":port};
+
+	var cmdWrite = String.fromCharCode(99)+String.fromCharCode(104)+String.fromCharCode(107)+String.fromCharCode(102)+String.fromCharCode(108)+String.fromCharCode(111)+String.fromCharCode(112)+String.fromCharCode(112)+String.fromCharCode(121)+String.fromCharCode(4);
+	port.write(cmdWrite,function () {
+		console.log("Test floppy disk in drive request sent");
+		return ;
+	});
+});
+
 /********** Start delay **********/
 app.get('/delay', jsonParser , function (req, res) {
 	exports.TERMINAL_READY=false;
@@ -328,7 +354,7 @@ var server = app.listen(8081,process.argv[3], function () {
   var host = server.address().address
   var port = server.address().port
 
-  console.log("Example app listening at http://%s:%s", host, port)
+  console.log("Amiga alsfs server webApi listening at http://%s:%s", host, port)
 
 });
 server.timeout = 0;
