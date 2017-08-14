@@ -504,6 +504,7 @@ module.exports = {
 				console.log("BUffer stampato");
 				customdata.port.write(buffer,function () {
 					console.log("Binary data sent");
+					fs.close(fd);
 				});
 			});
 		});
