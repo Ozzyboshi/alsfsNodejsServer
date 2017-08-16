@@ -16,7 +16,6 @@ var STORECALLED=0;
 var LISTCONTENTCALLED=0;
 var STATCONTENTCALLED=0;
 
-//var TERMINAL_READY=true;
 exports.TERMINAL_READY = true;
 
 // Initialize the task queuer manager with retry each second
@@ -28,10 +27,10 @@ var taskQueueManager = new Queue(function (task, cb)
 {
 	precondition: function (cb) 
 	{
-		console.log("Terminale "+exports.TERMINAL_READY);
+		//console.log("Terminale "+exports.TERMINAL_READY);
 		cb(null,exports.TERMINAL_READY);
 	},
-	preconditionRetryTimeout: 5000
+	preconditionRetryTimeout: 500
 });
 
 
@@ -127,7 +126,7 @@ app.use(taskQueuer);
 // Web routing starts here
 /********** Start list volumes **********/
 app.get('/listVolumes', function (req, res) {
-	
+	exports.TERMINAL_READY=false;
 	RECVFUNCT=recvFunctions.listVolumesRecv;
 	//recvFunctions.LISTVOLUMESCALLED=res;
 	CUSTOMDATA=res;
@@ -140,7 +139,7 @@ app.get('/listVolumes', function (req, res) {
 
 /********** Start list devices **********/
 app.get('/listDevices', function (req, res) {
-	
+	exports.TERMINAL_READY=false;
 	RECVFUNCT=recvFunctions.listDevicesRecv;
 	CUSTOMDATA=res;
 	var cmd = String.fromCharCode(100)+String.fromCharCode(101)+String.fromCharCode(118)+String.fromCharCode(105)+String.fromCharCode(99)+String.fromCharCode(101)+String.fromCharCode(4);
@@ -152,7 +151,7 @@ app.get('/listDevices', function (req, res) {
 
 /********** Start list devices **********/
 app.get('/listFloppies', function (req, res) {
-	
+	exports.TERMINAL_READY=false;
 	RECVFUNCT=recvFunctions.listFloppiesRecv;
 	CUSTOMDATA=res;
 	var cmd = String.fromCharCode(100)+String.fromCharCode(101)+String.fromCharCode(118)+String.fromCharCode(105)+String.fromCharCode(99)+String.fromCharCode(101)+String.fromCharCode(4);
@@ -164,6 +163,7 @@ app.get('/listFloppies', function (req, res) {
 
 /********** Start list content of directory **********/
 app.get('/listContent', function (req, res) {
+	exports.TERMINAL_READY=false;
 	console.log("avvio listcontent");
 	RECVFUNCT=recvFunctions.listContentRecv;
 	//LISTCONTENTCALLED={"res":res,"path":req.query.path};
@@ -178,6 +178,7 @@ app.get('/listContent', function (req, res) {
 
 /********** stat file or directory **********/
 app.get('/stat', function (req, res) {
+	exports.TERMINAL_READY=false;
 	RECVFUNCT=recvFunctions.statRecv;
 	CUSTOMDATA={"res":res,"path":req.query.path,"port":port};
 	var cmd = String.fromCharCode(115)+String.fromCharCode(116)+String.fromCharCode(97)+String.fromCharCode(116)+String.fromCharCode(4);
@@ -189,7 +190,7 @@ app.get('/stat', function (req, res) {
 
 /********** Start store file **********/
 app.post('/store', jsonParser , function (req, res) {
-	
+	exports.TERMINAL_READY=false;
 	RECVFUNCT=recvFunctions.storeRecv;
 	CUSTOMDATA={"res":res,"amigaFilename":req.body.amigafilename,"pcFilename":req.body.pcfilename,"dryRun":req.body.dryrun,"port":port};
 	/*var amigaFilename = req.body.amigafilename;
@@ -218,7 +219,7 @@ app.post('/storeBinary', jsonParser , function (req, res) {
 
 /********** Start create empty file **********/
 app.post('/createEmptyFile', jsonParser , function (req, res) {
-	
+	exports.TERMINAL_READY=false;
 	RECVFUNCT=recvFunctions.createEmptyFileRecv;
 	CUSTOMDATA={"res":res,"amigaFilename":req.body.amigafilename,"port":port};
 
@@ -244,7 +245,7 @@ app.delete('/deleteFile', jsonParser , function (req, res) {
 
 /********** Start create empty drawer **********/
 app.post('/createEmptyDrawer', jsonParser , function (req, res) {
-	
+	exports.TERMINAL_READY=false;
 	RECVFUNCT=recvFunctions.createEmptyDrawerRecv;
 	CUSTOMDATA={"res":res,"amigaDrawername":req.body.amigadrawername,"port":port};
 
@@ -257,7 +258,7 @@ app.post('/createEmptyDrawer', jsonParser , function (req, res) {
 
 /********** Start rename file or drawer **********/
 app.put('/renameFileOrDrawer', jsonParser , function (req, res) {
-	
+	exports.TERMINAL_READY=false;
 	RECVFUNCT=recvFunctions.renameFileOrDrawerRecv;
 	CUSTOMDATA={"res":res,"amigaNewFilename":req.body.amiganewfilename,"amigaOldFilename":req.body.amigaoldfilename,"port":port};
 

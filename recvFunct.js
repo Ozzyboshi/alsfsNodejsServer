@@ -16,6 +16,7 @@ module.exports = {
 	var arrayConverted = converted.split('\n');
 	arrayConverted = arrayConverted.filter(function(entry) { return entry.trim() != ''; });
 	customdata.end( JSON.stringify(arrayConverted ));
+	server.TERMINAL_READY=true;
   },
   listDevicesRecv: function (data,customdata) {
     console.log('Devices: ' + data);
@@ -29,6 +30,7 @@ module.exports = {
 	var arrayConverted = converted.split('\n');
 	arrayConverted = arrayConverted.filter(function(entry) { return entry.trim() != ''; });
 	customdata.end( JSON.stringify(arrayConverted ));
+	server.TERMINAL_READY=true;
   },
   listFloppiesRecv: function (data,customdata) {
     console.log('Floppies: ' + data);
@@ -50,6 +52,7 @@ module.exports = {
 		}
 	}
 	customdata.end( JSON.stringify(arrayFloppy));
+	server.TERMINAL_READY=true;
   },
   listContentRecv: function (data,customdata) {
     console.log('Content: ' + data);
@@ -84,6 +87,7 @@ module.exports = {
 		arrayConverted = arrayConverted.filter(function(entry) { return entry.trim() != ''; });
 		console.log(JSON.stringify(arrayConverted));
 		customdata.res.end(JSON.stringify(arrayConverted) );
+		server.TERMINAL_READY=true;
 	}
   },
   statRecv: function (data,customdata) {
@@ -118,11 +122,13 @@ module.exports = {
 			console.log("Error, file not readable");
 			customdata.res.status(404);
 			customdata.res.end ();
+			server.TERMINAL_READY=true;
 		}
 		else
 		{
 			var convertedObj={"st_size":arrayConverted[0],"blk_size":arrayConverted[1],"directory":arrayConverted[2],"days":arrayConverted[3],"minutes":arrayConverted[4],"seconds":arrayConverted[5]};
 			customdata.res.end( JSON.stringify(convertedObj) );
+			server.TERMINAL_READY=true;
 		}
 	}
   },
@@ -171,6 +177,7 @@ module.exports = {
 			customdata.port.write(fs.readFileSync(customdata.pcFilename),function () {
 				console.log("Binary data sent");
 				customdata.res.end( "OK" );
+				server.TERMINAL_READY=true;
 			});
 		}
 	 }
@@ -284,11 +291,13 @@ module.exports = {
 	{
 		console.log("File created");
 		customdata.res.end( "OK" );
+		server.TERMINAL_READY=true;
 	}
 	else
 	{
 		console.log("File not created");
 		customdata.res.end( "KO" );
+		server.TERMINAL_READY=true;
 	}
   },
   createEmptyDrawerRecv: function (data,customdata) {
@@ -316,12 +325,14 @@ module.exports = {
 	{
 		console.log("Drawer created");
 		customdata.res.end( "OK" );
+		server.TERMINAL_READY=true;
 	}
 	else
 	{
 		console.log("Drawer not created");
 		customdata.res.status(404);
 		customdata.res.end( "KO" );
+		server.TERMINAL_READY=true;
 	}
   },
   renameFileOrDrawerRecv: function (data,customdata) {
@@ -365,12 +376,14 @@ module.exports = {
 	{
 		console.log("File or Drawer renamed");
 		customdata.res.end( "OK" );
+		server.TERMINAL_READY=true;
 	}
 	else
 	{
 		console.log("File Or Drawer not renamed");
 		customdata.res.status(404);
 		customdata.res.end( "KO" );
+		server.TERMINAL_READY=true;
 	}
   },
   readFileRecv: function (data,customdata) {
@@ -581,38 +594,8 @@ module.exports = {
 		console.log(cmd);
 		customdata.res.end( cmd );
 		server.TERMINAL_READY=true;
-		console.log("HTTP RESPONSE SENT!!");
-		
-		/*console.log("Sending binary data for "+customdata.adfFilename);
-		buffer = new Buffer(parseInt(words[2]));
-
-		fs.open(customdata.adfFilename, 'r', function(err, fd) {
-			if (err) throw err;
-			fs.read(fd, buffer, 0 , parseInt(words[2]), parseInt(words[1]), function(err, nread) {
-				console.log("Offset : ",parseInt(words[1]));
-				console.log("Chunk size : ",parseInt(words[2]));
-				console.log(buffer);
-				console.log("BUffer stampato");
-				customdata.port.write(buffer,function () {
-					console.log("Binary data sent");
-				});
-			});
-		});*/
+		console.log("HTTP RESPONSE SENT!!");	
 	}
-	/*else if (data[0]==54 && data[1]==0 && data[2]==3)
-	{
-		customdata.res.status(404);
-		customdata.res.end( '' );
-		server.TERMINAL_READY=true;
-		console.log("HTTP RESPONSE SENT!!");
-	}
-	else
-	{
-		customdata.res.status(200);
-		customdata.res.end( cmd );
-		server.TERMINAL_READY=true;
-		console.log("HTTP RESPONSE SENT!!");
-	}*/
   },
   delayRecv: function (data,customdata) {
 	console.log('aaaa Richiesta: #' + data+"##");
@@ -711,6 +694,3 @@ module.exports = {
 	}
   }
 };
-
-var zemba = function () {
-}
