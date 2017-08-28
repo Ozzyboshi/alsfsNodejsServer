@@ -243,7 +243,24 @@ module.exports = {
 			//var buf="";
 			const buf = new Buffer(customdata.data, 'base64');
 			//console.log("Sending binary data "+buf);
-			console.log("lunghezza",buf.length);
+			console.log("lunghezza del buffer che sto per mandare...",buf.length);
+
+			if (customdata.size!=buf.length)
+			{
+				console.log("BOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOM!!!!!!");
+				fs.writeFile("/tmp/testcodificato", customdata.data, function(err) {
+				    if(err) {
+				        return console.log(err);
+				    }
+					console.log("The file was saved!");
+				}); 
+				fs.writeFile("/tmp/testdecodificato", buf, function(err) {
+				    if(err) {
+				        return console.log(err);
+				    }
+					console.log("The file was saved!");
+				}); 
+			}
 			//console.log("lunghezza",buf.toString('binary').length);
 			/*for (var z=0;z<buf.length;z++)
 			{
@@ -254,7 +271,6 @@ module.exports = {
 				else
 				{
 					console.log("Binary data sent");
-					// customdata.res.end( "OK" );
 				}
 			});
 		}
