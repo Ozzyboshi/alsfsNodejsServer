@@ -1,0 +1,35 @@
+{
+  "name": "alsfsserver",
+  "version": "1.0.0",
+  "description": "Web service api implementation for Amiga Linux filesystem",
+  "main": "amigajsserver.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ozzyboshi/alsfsNodejsServer.git"
+  },
+  "keywords": [
+    "Amiga",
+    "web",
+    "server"
+  ],
+  "author": "Alessio Garzi",
+  "license": "GPL-2.0",
+  "bugs": {
+    "url": "https://github.com/Ozzyboshi/alsfsNodejsServer/issues"
+  },
+  "homepage": "https://github.com/Ozzyboshi/alsfsNodejsServer#readme",
+  "dependencies": {
+    "better-queue": "^3.8.5",
+    "body-parser": "^1.17.2",
+    "express": "^4.15.4",
+    "keypress": "^0.2.1",
+    "serialport": "^4.0.7",
+    "shelljs": "^0.7.8",
+    "sleep": "^5.1.1",
+    "uuid": "^3.1.0",
+    "wait.for": "^0.6.6"
+  }
+}
