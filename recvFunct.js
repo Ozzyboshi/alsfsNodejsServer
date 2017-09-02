@@ -505,7 +505,7 @@ module.exports = {
 	{
 		const end = customdata.end;
 
-		console.log("Sending end "+start+"...");
+		console.log("Sending end "+end+"...");
 		cmd=end.toString()+String.fromCharCode(4);
 		console.log("sto per mandare"+cmd);
 			
