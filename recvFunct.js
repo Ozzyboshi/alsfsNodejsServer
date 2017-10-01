@@ -281,6 +281,15 @@ module.exports = {
 	 	customdata.res.end( "OK" );
 	 	server.TERMINAL_READY=true;
 	 }
+	 else if (data[0]==54 && data[1]==0 && data[2]==3)
+	 {
+	 	console.log("Trasmission error occured, starting over...");
+	 	var cmdWrite = String.fromCharCode(115)+String.fromCharCode(116)+String.fromCharCode(111)+String.fromCharCode(114)+String.fromCharCode(101)+String.fromCharCode(114)+String.fromCharCode(97)+String.fromCharCode(119)+String.fromCharCode(4);
+		customdata.port.write(cmdWrite,function () {
+			console.log("Store binary data request sent");
+			return ;
+		});
+	 }
   },
   createEmptyFileRecv: function (data,customdata) {
 	console.log('aaaa Richiesta: #' + data+"##");
@@ -536,6 +545,103 @@ module.exports = {
 					fs.close(fd);
 				});
 			});
+		});
+	}
+	else if (data[0]==54 && data[1]==0 && data[2]==3)
+	{
+		customdata.res.status(404);
+		customdata.res.end( '' );
+		server.TERMINAL_READY=true;
+		console.log("HTTP RESPONSE SENT!!");
+	}
+	else
+	{
+		customdata.res.status(200);
+		customdata.res.end( cmd );
+		server.TERMINAL_READY=true;
+		console.log("HTTP RESPONSE SENT!!");
+	}
+  },
+  writeAdfB64Recv: function (data,customdata) {
+	console.log('aaaa Richiesta: #' + data+"##");
+	//console.log("amiga file name: "+customdata.amigaFilename);
+
+	// Send old name
+	if (data[0]==49 && data[1]==0 && data[2]==3)
+	{
+
+		const trackDevice = customdata.trackDevice;
+		console.log("Trackdevice "+trackDevice+"...");
+			
+		cmd=trackDevice.toString()+String.fromCharCode(4);
+		console.log("sto per mandare"+cmd);
+			
+		customdata.port.write(cmd,function () {
+			console.log("Trackdevice sent to read file");
+		});
+			
+	}
+	// Send start
+	else if (data[0]==50 && data[1]==0 && data[2]==3)
+	{
+
+		const start = customdata.start;
+
+		console.log("Sending start "+start+"...");
+		cmd=start.toString()+String.fromCharCode(4);
+		console.log("sto per mandare"+cmd);
+			
+		customdata.port.write(cmd,function () {
+			console.log("Start sent");
+		});
+			
+	}
+	// Send offset
+	else if (data[0]==51 && data[1]==0 && data[2]==3)
+	{
+		const end = customdata.end;
+
+		console.log("Sending end "+end+"...");
+		cmd=end.toString()+String.fromCharCode(4);
+		console.log("sto per mandare"+cmd);
+			
+		customdata.port.write(cmd,function () {
+			console.log("End sent");
+		});		
+	}
+	// da modificare
+	else if (data[0]==52)
+	{
+		var cmd="";
+		for (var i=0;i<data.length-1;i++)
+			cmd+=String.fromCharCode(data[i]);
+
+		var words = cmd.split(' ');
+		
+		console.log("Sending binary data ");
+		//buffer = new Buffer(parseInt(words[2]));
+
+		//const bufOrig = new Buffer(customdata.adfB64Data, 'base64');
+		//bufOrig.copy(buffer,0,parseInt(words[1]),parseInt(words[2]));
+		//console.log("Offset : "+parseInt(words[1])+"- Data length: "+parseInt(words[2]));
+			//+" - Buffer length: "+buffer.toString().length+" - buffer:"+buffer.toString());
+		//fs.writeFile("/tmp/testdecodificatochunk"+words[1], bufOrig.slice(parseInt(words[1]),parseInt(words[1])+parseInt(words[2])), function(err) {
+		/*fs.writeFile("/tmp/testdecodificatochunk"+words[1], customdata.adfData.slice(parseInt(words[1]),parseInt(words[1])+parseInt(words[2])), function(err) {
+				    if(err) {
+				        return console.log(err);
+				    }
+					console.log("The file was saved!");
+				});
+
+		fs.writeFile("/tmp/testdecodificato", customdata.adfData, function(err) {
+				    if(err) {
+				        return console.log(err);
+				    }
+					console.log("The file was saved!");
+				});*/
+
+		customdata.port.write(customdata.adfData.slice(parseInt(words[1]),parseInt(words[1])+parseInt(words[2])),function () {
+			console.log("Binary data sent");
 		});
 	}
 	else if (data[0]==54 && data[1]==0 && data[2]==3)
