@@ -780,6 +780,75 @@ module.exports = {
 		server.TERMINAL_READY=true;
 	}
   },
+  relabelRecv: function (data,customdata) {
+	console.log('aaaa Richiesta: #' + data+"##");
+
+	// Send old name
+	if (data[0]==49 && data[1]==0 && data[2]==3)
+	{
+		
+		var cmd="";			
+		
+		const oldVolumeName = customdata.oldVolumeName;
+		console.log("Old volume name "+oldVolumeName+"...");
+			
+		cmd=oldVolumeName.toString()+String.fromCharCode(4);
+		console.log("sto per mandare"+cmd);
+			
+		customdata.port.write(cmd,function () {
+			console.log("Old volume name sent value sent");
+		});
+			
+	}
+	else if (data[0]==50 && data[1]==0 && data[2]==3)
+	{
+		
+		var cmd="";			
+		
+		const newVolumeName = customdata.newVolumeName;
+		console.log("New volume name "+newVolumeName+"...");
+			
+		cmd=newVolumeName.toString()+String.fromCharCode(4);
+		console.log("sto per mandare"+cmd);
+			
+		customdata.port.write(cmd,function () {
+			console.log("Old volume name sent value sent");
+		});
+			
+	}
+	else if (data[0]==51 && data[1]==0 && data[2]==3)
+	{
+		
+		var cmd="";
+		for (var i=0;i<data.length-1;i++)
+			cmd+=String.fromCharCode(data[i]);
+		console.log("Response received: "+cmd);
+		customdata.res.status(200);
+		customdata.res.end( cmd );
+		server.TERMINAL_READY=true;
+			
+	}
+	else if (data[0]==53 && data[1]==0 && data[2]==3)
+	{
+		var cmd="";
+		for (var i=0;i<data.length-1;i++)
+			cmd+=String.fromCharCode(data[i]);
+		console.log("Response received: "+cmd);
+		customdata.res.status(404);
+		customdata.res.end( cmd );
+		server.TERMINAL_READY=true;
+	}
+	else
+	{
+		var cmd="";
+		for (var i=0;i<data.length-1;i++)
+			cmd+=String.fromCharCode(data[i]);
+		console.log("Response received: "+cmd);
+		customdata.res.status(400);
+		customdata.res.end( cmd );
+		server.TERMINAL_READY=true;
+	}
+  },
   deleteFileRecv: function (data,customdata) {
 	console.log('aaaa Richiesta: #' + data+"##");
 	console.log("amiga file name: "+customdata.amigaFilename);

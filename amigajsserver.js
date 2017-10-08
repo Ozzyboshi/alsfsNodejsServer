@@ -89,8 +89,8 @@ if (process.argv.length==5 && process.argv[4]=="-bootstrap")
 			}
 			else if (stage==2)
 			{
-				command="cat volumes6 > "+process.argv[2];
-				console.log("type ram:volumes6 on your amiga and then press a in this terminal to exit");
+				command="cat alsfssrv > "+process.argv[2];
+				console.log("type ram:alsfssrv on your amiga and then press a in this terminal to exit");
 				execSync(command);
 				stage=3;
 			}
@@ -334,6 +334,19 @@ else
 		var cmdWrite = String.fromCharCode(99)+String.fromCharCode(104)+String.fromCharCode(107)+String.fromCharCode(102)+String.fromCharCode(108)+String.fromCharCode(111)+String.fromCharCode(112)+String.fromCharCode(112)+String.fromCharCode(121)+String.fromCharCode(4);
 		port.write(cmdWrite,function () {
 			console.log("Test floppy disk in drive request sent");
+			return ;
+		});
+	});
+
+	/********** Start volume relabel **********/
+	app.put('/relabel', jsonParser , function (req, res) {
+		exports.TERMINAL_READY=false;
+		RECVFUNCT=recvFunctions.relabelRecv;
+		CUSTOMDATA={"res":res,"oldVolumeName":req.body.oldVolumeName,"newVolumeName":req.body.newVolumeName,"port":port};
+
+		var cmdWrite = String.fromCharCode(114)+String.fromCharCode(101)+String.fromCharCode(108)+String.fromCharCode(97)+String.fromCharCode(98)+String.fromCharCode(101)+String.fromCharCode(108)+String.fromCharCode(4);
+		port.write(cmdWrite,function () {
+			console.log("Relabel volume request sent");
 			return ;
 		});
 	});
