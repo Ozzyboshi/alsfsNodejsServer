@@ -5,10 +5,12 @@ var fs = require('fs');
 var Queue = require('better-queue');
 const uuidv4 = require('uuid/v4');
 var execSync = require('child_process').execSync;
+var expressValidator = require('express-validator');
 
 var app = express();
 var jsonParser = bodyParser.json();
 var urlencodedParser = bodyParser.urlencoded({ extended: false });
+app.use(expressValidator());
 
 // Enable long json http messages for adf transfers
 app.use(bodyParser.json({limit: '5mb'}));
@@ -108,8 +110,7 @@ if (process.argv.length==5 && process.argv[4]=="-bootstrap")
 else
 {
 	console.log("Opening "+process.argv[2]);
-	// versione per amiga reale var port = new SerialPort(process.argv[2],{baudRate:19200,dataBits:8,stopBits:1,parity:"none",rtscts:true,bufferSize:4096,autoOpen: true,parser: SerialPort.parsers.byteDelimiter([3])});
-	/* versione per amiga vertuale */ var port = new SerialPort(process.argv[2],{baudRate:19200,dataBits:8,stopBits:1,parity:"none",rtscts:true,xon:true,xoff:true,bufferSize:4096,autoOpen: true,parser: SerialPort.parsers.byteDelimiter([3])});
+	var port = new SerialPort(process.argv[2],{baudRate:19200,dataBits:8,stopBits:1,parity:"none",rtscts:true,xon:true,xoff:true,bufferSize:4096,autoOpen: true,parser: SerialPort.parsers.byteDelimiter([3])});
 	var amigaCmd="";
 	var Volumes="";
 	var RECVFUNCT=undefined;
@@ -128,7 +129,29 @@ else
 	app.use(taskQueuer);
 
 	// Web routing starts here
-	/********** Start list volumes **********/
+	
+
+	/**
+	* @apiGroup List volumes
+	* @apiName listVolumes
+ 	* @apiExample {curl} Example usage:
+ 	*     curl -i http://localhost:8081/listVolumes
+ 	*	HTTP/1.1 200 OK
+	*	X-Powered-By: Express
+	*	Date: Sat, 14 Oct 2017 06:23:17 GMT
+	*	Connection: keep-alive
+	*	Content-Length: 27
+	*
+	*	["Ram Disk","Workbench2.1"]
+ 	* @api {get} /listVolumes
+ 	* @apiName listVolumes
+ 	* @apiSuccess {Object[]} volumes  Volumes mounted on the Amiga.
+ 	* @apiVersion 1.0.0
+ 	* @apiDescription 
+ 	* listVolums reads all the volumes currently mounted on the amiga and returns them in an array.
+ 	* 
+ 	* Non-Dos volumes are not part of the resulting array.
+ 	*/
 	app.get('/listVolumes', function (req, res) {
 		exports.TERMINAL_READY=false;
 		RECVFUNCT=recvFunctions.listVolumesRecv;
@@ -141,7 +164,45 @@ else
 		});
 	});
 
-	/********** Start list devices **********/
+	/**
+	* @apiGroup List devices
+	* @apiName listDevices
+ 	* @apiExample {curl} Example usage:
+ 	*	curl -i http://localhost:8081/listDevices
+ 	*	HTTP/1.1 200 OK
+	*	X-Powered-By: Express
+	*	Date: Sat, 14 Oct 2017 06:26:39 GMT
+	*	Connection: keep-alive
+	*	Content-Length: 56
+	*
+	*	["PIPE","RAM","CON","RAW","SER","PAR","PRT","DF0","CC0"]
+ 	* @api {get} /listDevices
+ 	* @apiName listDevices
+ 	* @apiSuccess {Object[]} devices  Devices recognized from AmigaDos.
+ 	* @apiVersion 1.0.0
+ 	* @apiDescription 
+ 	* listDevices lists all the devices currently available on the Amiga and returns them in an array.
+ 	* 
+ 	* Usually they are (on a Amiga 600 unexpanded):
+ 	* 
+ 	* PIPE - transfers data from one program to another using temporary storage in RAM
+ 	*
+ 	* RAM - Ram disk
+ 	*
+ 	* CON - Console device
+ 	*
+ 	* RAW - Raw device
+ 	*
+ 	* SER - Serial device
+ 	*
+ 	* PAR - Parallel device
+ 	*
+ 	* PRT - Printer device
+ 	*
+ 	* DF0 - Floppy drive 0
+ 	*
+ 	* CC0 - PCMCIA Card drive device ?
+ 	*/
 	app.get('/listDevices', function (req, res) {
 		exports.TERMINAL_READY=false;
 		RECVFUNCT=recvFunctions.listDevicesRecv;
@@ -153,7 +214,25 @@ else
 		});
 	});
 
-	/********** Start list devices **********/
+	/**
+	* @apiGroup List floppies
+	* @apiName listFloppies
+ 	* @apiExample {curl} Example usage:
+ 	* 	curl -i http://localhost:8081/listFloppies
+ 	*	HTTP/1.1 200 OK
+	*	X-Powered-By: Express
+	*	Date: Sat, 14 Oct 2017 06:19:29 GMT
+	*	Connection: keep-alive
+	*	Content-Length: 7
+	*
+	*	["DF0"]
+ 	* @api {get} /listFloppies
+ 	* @apiName listFloppies
+ 	* @apiSuccess {Object[]} floppies  Floppies units recognized from AmigaDos.
+ 	* @apiVersion 1.0.0
+ 	* @apiDescription 
+ 	* listFloppies lists all the floppy disk drives currently available on the Amiga and returns them in an array (ex DF0:DF1..).
+ 	*/
 	app.get('/listFloppies', function (req, res) {
 		exports.TERMINAL_READY=false;
 		RECVFUNCT=recvFunctions.listFloppiesRecv;
@@ -165,23 +244,94 @@ else
 		});
 	});
 
-	/********** Start list content of directory **********/
-	app.get('/listContent', function (req, res) {
+	/**
+	* @apiGroup List content
+	* @apiName listContent
+	* @apiParam {path} Full amiga path where the data must be retrieved.
+ 	* @apiExample {curl} Example usage:
+ 	*	curl -i  -H "Content-Type: application/json" -X GET -d '{"path":"Ram Disk:"}' http://localhost:8081/listContent
+	*	HTTP/1.1 200 OK
+	*	X-Powered-By: Express
+	*	Date: Sat, 14 Oct 2017 07:30:39 GMT
+	*	Connection: keep-alive
+	*	Content-Length: 43
+	*
+	*	["alsfssrv","setup","ENV","Clipboards","T"]
+	* @apiParamExample {json} Request-Example:
+                 { "path": "Ram Disk:" }
+ 	* @api {get} /listContent
+ 	* @apiName listContent
+ 	* @apiSuccess {Object[]} content  Files and drawers found under the given path.
+ 	* @apiVersion 1.0.0
+ 	* @apiDescription 
+ 	* listContent returns the names of all files and drawers found under a certain path.
+ 	* The path must be absolute and it must start with a valid mounted volume name like "Ram Disk:"
+ 	* Examine and ExNext amigados functions are used on the Amiga side to retrieve the data.
+ 	*/
+	app.get('/listContent', jsonParser, function (req, res) {
+		req.check('path','Invalid path').isLength({min:1});
+		if (ApiValidate(req,res)==false) return ;
 		exports.TERMINAL_READY=false;
 		console.log("avvio listcontent");
 		RECVFUNCT=recvFunctions.listContentRecv;
-		//LISTCONTENTCALLED={"res":res,"path":req.query.path};
-		CUSTOMDATA={"res":res,"path":req.query.path,port:port};
+		CUSTOMDATA={"res":res,"path":req.body.path,port:port};
 		var cmd = String.fromCharCode(108)+String.fromCharCode(105)+String.fromCharCode(115)+String.fromCharCode(116)+String.fromCharCode(4);
 		console.log("Sending "+cmd);	
-		console.log("Path "+req.query.path);
+		console.log("Path "+req.body.path);
 		port.write(cmd,function () {
 			console.log("List content sent");
 		});
 	});
 
-	/********** stat file or directory **********/
+	/**
+	* @apiGroup Stat
+	* @apiName stat
+	* @apiParam {path} Full amiga path (drawer of file) to stat.
+ 	* @apiExample {curl} Example usage
+ 	*	curl -i  -H "Content-Type: application/json" -X GET -d '{"path":"Ram Disk:"}' http://localhost:8081/stat
+	*	HTTP/1.1 200 OK
+	*	X-Powered-By: Express
+	*	Date: Sun, 15 Oct 2017 16:10:38 GMT
+	*	Connection: keep-alive
+	*	Content-Length: 92
+	*
+	*	{"st_size":"0","blk_size":"1","directory":"1","days":"7252","minutes":"925","seconds":"189"}
+	* @apiExample {curl} Example usage 2
+	*	curl -i  -H "Content-Type: application/json" -X GET -d '{"path":"Workbench2.1:System.info"}' http://localhost:8081/stat
+	*	HTTP/1.1 200 OK
+	*	X-Powered-By: Express
+	*	Date: Sun, 15 Oct 2017 16:14:55 GMT
+	*	Connection: keep-alive
+	*	Content-Length: 95
+	*
+	*	{"st_size":"632","blk_size":"2","directory":"0","days":"5386","minutes":"992","seconds":"1200"}
+	* @apiExample {curl} Example usage 3
+	* 	curl -i  -H "Content-Type: application/json" -X GET -d '{"path":"Workbench2.1:System"}' http://localhost:8081/stat
+	* 	HTTP/1.1 200 OK
+	* 	X-Powered-By: Express
+	* 	Date: Sun, 15 Oct 2017 16:25:34 GMT
+	* 	Connection: keep-alive
+	*	Content-Length: 93
+	*
+	*	{"st_size":"0","blk_size":"0","directory":"1","days":"5586","minutes":"188","seconds":"2450"}
+	* @apiParamExample {json} Request-Example:
+	*   { "path": "Ram Disk:" }
+ 	* @api {get} /stat
+ 	* @apiName stat
+ 	* @apiSuccess {Object} stat  Stat informations about the requested file or drawer.
+ 	* @apiSuccess {Number}  profile.st_size Size of the file in bytes (0 for drawers).
+ 	* @apiSuccess {Number}  profile.blk_size Block size of the file.
+ 	* @apiSuccess {Boolean}  profile.directory Flag indicating if thr requeste resource is a drawer (1) or not (0).
+ 	* @apiSuccess {Number}  profile.days Days of the creation date since 1 Jan 1970.
+ 	* @apiSuccess {Number}  profile.minutes Minutes of the creation date since 1 Jan 1970.
+ 	* @apiSuccess {Number}  profile.ticks Ticks of the creation date since 1 Jan 1970.
+ 	* @apiVersion 1.0.0
+ 	* @apiDescription 
+ 	* Stat returns informations about a file or directory inside the Amiga.
+ 	*/
 	app.get('/stat', jsonParser, function (req, res) {
+		req.check('path','Invalid path').isLength({min:1});
+		if (ApiValidate(req,res)==false) return ;
 		exports.TERMINAL_READY=false;
 		RECVFUNCT=recvFunctions.statRecv;
 		CUSTOMDATA={"res":res,"path":req.body.path,"port":port};
@@ -378,4 +528,16 @@ else
 	  console.log("Amiga alsfs server webApi listening at http://%s:%s", host, port)
 	});
 	server.timeout = 0;
+}
+
+function ApiValidate(req,res)
+{
+	var errors = req.validationErrors();
+	if (errors)
+	{
+		res.status(400);
+		res.end( 'Input error'+JSON.stringify(errors, null, 2));
+		return false;
+	}
+	return true;
 }

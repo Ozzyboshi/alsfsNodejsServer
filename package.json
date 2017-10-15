@@ -25,11 +25,22 @@
     "better-queue": "^3.8.5",
     "body-parser": "^1.17.2",
     "express": "^4.15.4",
+    "express-validator": "^4.2.1",
     "keypress": "^0.2.1",
     "serialport": "^4.0.7",
     "shelljs": "^0.7.8",
     "sleep": "^5.1.1",
     "uuid": "^3.1.0",
+    "validator": "^9.0.0",
     "wait.for": "^0.6.6"
+  },
+  "apidoc": {
+    "name": "Alsfs API",
+    "version": "1.0.0",
+    "title": "Alsfs api",
+    "url": "http://alsfsNodejsServerIP:8081",
+    "template": {
+      "forceLanguage": "en"
+    }
   }
 }
