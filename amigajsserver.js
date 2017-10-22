@@ -483,10 +483,10 @@ else
  	* Write a b64 encode adf file to a floppy drive.
  	*/
 	app.post('/writeAdfB64', jsonParser , function (req, res) {
-		req.check('adfData','Adf data is required').notEmpty();
-		req.check('trackdevice','Invalid trackdevice (1 digit values are allowed)').isLength({min:1,max:1});
-		req.check('start','Invalid start (1 or 2 digit values are allowed)').isLength({min:1,max:2});
-		req.check('end','Invalid end (1 or 2 digit values are allowed)').isLength({min:1,max:2});
+		req.check('adfData','Base64 encoded Adf data is required').not().isBase64();
+		req.check('trackdevice','Invalid trackdevice (digit values are allowed: 0 1 2 and 3)').isLength({min:0,max:3});
+		req.check('start','Invalid start (values allowed: 0-79)').isLength({min:0,max:79});
+		req.check('end','Invalid end (values allowed: 0-79)').isLength({min:0,max:79});
 		if (ApiValidate(req,res)==false) return ;
 		exports.TERMINAL_READY=false;
 		RECVFUNCT=recvFunctions.writeAdfB64Recv;
