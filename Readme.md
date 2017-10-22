@@ -9,3 +9,6 @@ to run on a raspberry pi (tested on a raspberry pi model 1 with raspbian 7 wheez
 get g++ and gcc 4.9 (you probably have to upgrade di jessie to do this)
 
 install serialport with sudo npm install serialport --unsafe-perm --build-from-source
+
+for a docker container inside a vm connected to a fs-uae virtual serial port: run the node image and install and lauch socat within the container, the --device docker flag won't work
+
