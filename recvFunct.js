@@ -132,56 +132,6 @@ module.exports = {
 		}
 	}
   },
-  storeRecv: function (data,customdata) {
-	console.log('aaaa Richiesta: #' + data+"##");
-	console.log("amiga file name: "+customdata.amigaFilename);
-	console.log(data.toString().charCodeAt(0));
-
-	// Send filename
-	if (data[0]==49 && data[1]==0 && data[2]==3)
-	{
-		console.log("Sending file name "+customdata.amigaFilename+"...");
-		var cmd="";			
-		for (var i=0;i<customdata.amigaFilename.length;i++)
-		{
-			cmd+=customdata.amigaFilename[i];
-		}
-		cmd+=String.fromCharCode(4);
-			
-		customdata.port.write(cmd,function () {
-			console.log("File name sent to store");
-		});
-			
-	}
-	//Send filesize	
-	else if (data[0]==50 && data[1]==0 && data[2]==3)
-	{
-		const stats = fs.statSync(customdata.pcFilename);
-		const fileSizeInBytes = stats.size;
-		console.log("Sending file size "+fileSizeInBytes+"...");
-			
-		cmd=fileSizeInBytes.toString()+String.fromCharCode(4);
-		console.log("sto per mandare"+cmd);
-			
-		customdata.port.write(cmd,function () {
-			console.log("File size sent");
-		});
-	}
-	// Send binary data
-	else if (data[0]==51 && data[1]==0 && data[2]==3)
-	{
-		if (customdata.dryRun=="1") 	res.end( "Dryrun" );
-		else
-		{		
-			console.log("Sending binary data for "+customdata.pcFilename);
-			customdata.port.write(fs.readFileSync(customdata.pcFilename),function () {
-				console.log("Binary data sent");
-				customdata.res.end( "OK" );
-				server.TERMINAL_READY=true;
-			});
-		}
-	 }
-  },
   // Start of store binary data
   storeBinaryRecv: function (data,customdata) {
 	console.log('aaaa Richiesta: #' + data+"##");

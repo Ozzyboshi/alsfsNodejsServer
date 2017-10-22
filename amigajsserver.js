@@ -17,11 +17,6 @@ app.use(bodyParser.json({limit: '5mb'}));
 
 var recvFunctions=require('./recvFunct.js');
 
-var LISTVOLUMESCALLED=0;
-var STORECALLED=0;
-var LISTCONTENTCALLED=0;
-var STATCONTENTCALLED=0;
-
 exports.TERMINAL_READY = true;
 
 // Initialize the task queuer manager with retry each second
@@ -135,17 +130,17 @@ else
 	* @apiGroup List volumes
 	* @apiName listVolumes
  	* @apiExample {curl} Example usage:
- 	*     curl -i http://localhost:8081/listVolumes
- 	*	HTTP/1.1 200 OK
-	*	X-Powered-By: Express
-	*	Date: Sat, 14 Oct 2017 06:23:17 GMT
-	*	Connection: keep-alive
-	*	Content-Length: 27
+ 	* curl -i http://localhost:8081/listVolumes
+ 	* HTTP/1.1 200 OK
+	* X-Powered-By: Express
+	* Date: Sat, 14 Oct 2017 06:23:17 GMT
+	* Connection: keep-alive
+	* Content-Length: 27
 	*
-	*	["Ram Disk","Workbench2.1"]
+	* ["Ram Disk","Workbench2.1"]
  	* @api {get} /listVolumes
  	* @apiName listVolumes
- 	* @apiSuccess {Object[]} volumes  Volumes mounted on the Amiga.
+ 	* @apiSuccess {Object[]} volumes Volumes mounted on the Amiga.
  	* @apiVersion 1.0.0
  	* @apiDescription 
  	* listVolums reads all the volumes currently mounted on the amiga and returns them in an array.
@@ -155,7 +150,6 @@ else
 	app.get('/listVolumes', function (req, res) {
 		exports.TERMINAL_READY=false;
 		RECVFUNCT=recvFunctions.listVolumesRecv;
-		//recvFunctions.LISTVOLUMESCALLED=res;
 		CUSTOMDATA=res;
 		var cmd = String.fromCharCode(118)+String.fromCharCode(111)+String.fromCharCode(108)+String.fromCharCode(115)+String.fromCharCode(4);
 		console.log("Sending "+cmd);	
@@ -286,7 +280,7 @@ else
 	/**
 	* @apiGroup Stat
 	* @apiName stat
-	* @apiParam {path} Full amiga path (drawer of file) to stat.
+	* @apiParam {path} String Full amiga path (drawer of file) to stat.
  	* @apiExample {curl} Example usage
  	*	curl -i  -H "Content-Type: application/json" -X GET -d '{"path":"Ram Disk:"}' http://localhost:8081/stat
 	*	HTTP/1.1 200 OK
@@ -342,23 +336,35 @@ else
 		});
 	});
 
-	/********** Start store file **********/
-	app.post('/store', jsonParser , function (req, res) {
-		exports.TERMINAL_READY=false;
-		RECVFUNCT=recvFunctions.storeRecv;
-		CUSTOMDATA={"res":res,"amigaFilename":req.body.amigafilename,"pcFilename":req.body.pcfilename,"dryRun":req.body.dryrun,"port":port};
-		/*var amigaFilename = req.body.amigafilename;
-		var pcFilename = req.body.pcfilename;
-		var dryRun = req.body.dryrun;*/
-
-		var cmdWrite = String.fromCharCode(115)+String.fromCharCode(116)+String.fromCharCode(111)+String.fromCharCode(114)+String.fromCharCode(101)+String.fromCharCode(4);
-		port.write(cmdWrite,function () {
-			console.log("Store file request sent");
-			return ;
-		});
-	});
-
-	/********** Start store binary data **********/
+	/**
+	* @apiGroup StoreBinary
+	* @apiName storeBinary
+	* @apiParam {String} amigafilename Full path where the file must be stored.
+	* @apiParam {Number} size Size of the raw data to be stored.
+	* @apiParam {Number} offset Offset where to start writing at.
+	* @apiParam {Boolean} [dryRun=0] Pass 1 if you want just to test without writing any data.
+ 	* @apiExample {curl} Example usage:
+ 	*	curl -i  -H "Content-Type: application/json" -X GET -d '{"path":"Ram Disk:"}' http://localhost:8081/storeBinary
+	*	HTTP/1.1 200 OK
+	*	X-Powered-By: Express
+	*	Date: Sat, 14 Oct 2017 07:30:39 GMT
+	*	Connection: keep-alive
+	*	Content-Length: 43
+	*
+	*	["alsfssrv","setup","ENV","Clipboards","T"]
+	* @apiParamExample {json} Request-Example:
+	*	{ "amigafilename": "Ram Disk:test.txt" }
+	*	{ "data": "1234567890" }
+	*	{ "size": 10 }
+	*	{ "offset": 0 }
+	*	{ "dryRun": 0 }
+ 	* @api {post} /storeBinary
+ 	* @apiName storeBinary
+ 	* @apiSuccess {Object[]} content  Store.
+ 	* @apiVersion 1.0.0
+ 	* @apiDescription 
+ 	* store saved a file stored in the node js server to the amiga.
+ 	*/
 	app.post('/storeBinary', jsonParser , function (req, res) {
 		exports.TERMINAL_READY=false;
 		RECVFUNCT=recvFunctions.storeBinaryRecv;
@@ -449,8 +455,39 @@ else
 		});
 	});
 
-	/********** Start write amiga adf file **********/
+	/**
+	* @apiGroup WriteAdfB64
+	* @apiName writeAdfB64
+	* @apiParam {Number} trackDevice Trackdevice where to write data (for example 0 for DF0, 1 for DF1 and so on up to DF3).
+	* @apiParam {String} adfData Base64 encoded data to write representing a regular adf image (or part of it).
+	* @apiParam {Number} start Sector where to start writing at (for a full adf file put 0).
+	* @apiParam {Number} end Sector where to end writing at (for a full adf file put 79).
+ 	* @apiExample {curl} Example usage:
+ 	*	curl -i  -H "Content-Type: application/json" -X POST -d '{"trackDevice":0,"adfData":"place your adf base64 encode message here","start":0,"end":79}' http://localhost:8081/writeAdfB64
+	*	HTTP/1.1 200 OK
+	*	X-Powered-By: Express
+	*	Date: Sat, 14 Oct 2017 07:30:39 GMT
+	*	Connection: keep-alive
+	*	Content-Length: 43
+	*
+	* @apiParamExample {json} Request-Example:
+	*	{ "trackDevice": 0 }
+	*	{ "adfData": "AAAA..." }
+	*	{ "start": 0 }
+	*	{ "end": 79 }
+ 	* @api {post} /writeAdfB64
+ 	* @apiName writeAdfB64
+ 	* @apiSuccess {String} content  Store.
+ 	* @apiVersion 1.0.0
+ 	* @apiDescription 
+ 	* Write a b64 encode adf file to a floppy drive.
+ 	*/
 	app.post('/writeAdfB64', jsonParser , function (req, res) {
+		req.check('adfData','Adf data is required').notEmpty();
+		req.check('trackdevice','Invalid trackdevice (1 digit values are allowed)').isLength({min:1,max:1});
+		req.check('start','Invalid start (1 or 2 digit values are allowed)').isLength({min:1,max:2});
+		req.check('end','Invalid end (1 or 2 digit values are allowed)').isLength({min:1,max:2});
+		if (ApiValidate(req,res)==false) return ;
 		exports.TERMINAL_READY=false;
 		RECVFUNCT=recvFunctions.writeAdfB64Recv;
 		CUSTOMDATA={"res":res,"trackDevice":req.body.trackDevice,"adfData":new Buffer(req.body.adfB64Data,'base64'),"start":req.body.start,"end":req.body.end,"port":port};
