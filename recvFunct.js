@@ -276,13 +276,13 @@ module.exports = {
 	}
   },
   createEmptyDrawerRecv: function (data,customdata) {
-	console.log('aaaa Richiesta: #' + data+"##");
-	console.log("amiga file name: "+customdata.amigaFilename);
+	console.log('Request: #' + data+"##");
+	console.log("Amiga drawer name: "+customdata.amigaDrawername);
 
 	// Send drawer name
 	if (data[0]==49 && data[1]==0 && data[2]==3)
 	{
-		console.log("Sending file name to create "+customdata.amigaFilename+"...");
+		console.log("Sending file name to create "+customdata.amigaDrawername+"...");
 		var cmd="";			
 		for (var i=0;i<customdata.amigaDrawername.length;i++)
 		{
@@ -291,7 +291,7 @@ module.exports = {
 		cmd+=String.fromCharCode(4);
 			
 		customdata.port.write(cmd,function () {
-			console.log("File name sent to create empty file");
+			console.log("Drawer name sent to create empty drawer");
 		});
 			
 	}
