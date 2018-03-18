@@ -1,5 +1,6 @@
 // recvFunct.js
 // ========
+
 var server = require('./amigajsserver');
 var fs = require('fs');
 
@@ -85,6 +86,14 @@ module.exports = {
 		console.log(converted);
 		var arrayConverted = converted.split('\n');
 		arrayConverted = arrayConverted.filter(function(entry) { return entry.trim() != ''; });
+		// per ogni record di arrayConverted prendo le parole e le metto in un oggetto globale insieme a customdata.path e poi elimino le prime 6 parole cosi che rimanga solo l'ultima cioè il nome del file
+		for (var i=0;i<arrayConverted.length;i++)
+		{
+			var newObject = arrayConverted[i].split(' ');
+			console.log(newObject);
+			arrayConverted[i]=arrayConverted[i].substring(newObject[0].length+newObject[1].length+newObject[2].length+newObject[3].length+newObject[4].length+newObject[5].length+6);
+			server.STATCACHE[customdata.path+arrayConverted[i]]=newObject;
+		}
 		console.log(JSON.stringify(arrayConverted));
 		customdata.res.end(JSON.stringify(arrayConverted) );
 		server.TERMINAL_READY=true;
@@ -95,6 +104,7 @@ module.exports = {
 	if (data[0]==49 && data[1]==0 && data[2]==3)
 	{
 		console.log("Stat for resource "+customdata.path+"...");
+		console.log(server.STATCACHE[customdata.path]);
 		var cmd="";			
 		for (var i=0;i<customdata.path.length;i++)
 		{
@@ -116,7 +126,7 @@ module.exports = {
 			if (data[cont]) converted+=String.fromCharCode(data[cont]);
 			cont++;
 		}
-		var arrayConverted = converted.split('\n');
+		var arrayConverted = converted.split(' ');
 		if (arrayConverted.length<2)
 		{
 			console.log("Error, file not readable");
@@ -197,7 +207,6 @@ module.exports = {
 
 			if (customdata.size!=buf.length)
 			{
-				console.log("BOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOM!!!!!!");
 				fs.writeFile("/tmp/testcodificato", customdata.data, function(err) {
 				    if(err) {
 				        return console.log(err);
@@ -417,7 +426,7 @@ module.exports = {
 		var cmd="";
 		for (var i=0;i<data.length-1;i++)
 			cmd+=String.fromCharCode(data[i]);
-		console.log("comando: "+cmd);
+		console.log("command: "+cmd);
 		console.log("File data received length: "+cmd.length);
 		customdata.res.status(200);
 		customdata.res.end( cmd );
@@ -437,7 +446,7 @@ module.exports = {
 		console.log("Trackdevice "+trackDevice+"...");
 			
 		cmd=trackDevice.toString()+String.fromCharCode(4);
-		console.log("sto per mandare"+cmd);
+		console.log("sending"+cmd);
 			
 		customdata.port.write(cmd,function () {
 			console.log("Trackdevice sent to read file");
@@ -452,7 +461,7 @@ module.exports = {
 
 		console.log("Sending start "+start+"...");
 		cmd=start.toString()+String.fromCharCode(4);
-		console.log("sto per mandare"+cmd);
+		console.log("sending "+cmd);
 			
 		customdata.port.write(cmd,function () {
 			console.log("Start sent");
@@ -466,7 +475,7 @@ module.exports = {
 
 		console.log("Sending end "+end+"...");
 		cmd=end.toString()+String.fromCharCode(4);
-		console.log("sto per mandare"+cmd);
+		console.log("sending "+cmd);
 			
 		customdata.port.write(cmd,function () {
 			console.log("End sent");
@@ -489,7 +498,7 @@ module.exports = {
 				console.log("Offset : ",parseInt(words[1]));
 				console.log("Chunk size : ",parseInt(words[2]));
 				console.log(buffer);
-				console.log("BUffer stampato");
+				console.log("BUffer printed");
 				customdata.port.write(buffer,function () {
 					console.log("Binary data sent");
 					fs.close(fd);

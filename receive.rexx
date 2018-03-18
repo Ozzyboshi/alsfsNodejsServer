@@ -1,7 +1,7 @@
 /* receive.rexx
 ** Written by Wolfgang Stoeggl (1998, 2004) */
 file = 'ram:alsfssrv'
-size = 29144
+size = 28432
 say 'Now send the file!'
 open('1','ser:')
 open('2',file,'W')

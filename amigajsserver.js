@@ -18,6 +18,7 @@ app.use(bodyParser.json({limit: '5mb'}));
 var recvFunctions=require('./recvFunct.js');
 
 exports.TERMINAL_READY = true;
+exports.STATCACHE = [];
 
 // Initialize the task queuer manager with retry each second
 var taskQueueManager = new Queue(function (task, cb) 
@@ -63,7 +64,7 @@ if (process.argv.length==5 && process.argv[4]=="-bootstrap")
 		if (key && key.ctrl && key.name == 'c') 
 		{
 			process.stdin.pause();
-    	}
+		}
 		if (key.name == 'a') 
 		{
 			if (stage==0)
@@ -327,6 +328,22 @@ else
 		req.check('path','Invalid path').isLength({min:1});
 		if (ApiValidate(req,res)==false) return ;
 		exports.TERMINAL_READY=false;
+		if (exports.STATCACHE && exports.STATCACHE[req.body.path])
+		{
+			var convertedObj={
+				"st_size":exports.STATCACHE[req.body.path][0],
+				"blk_size":exports.STATCACHE[req.body.path][1],
+				"directory":exports.STATCACHE[req.body.path][2],
+				"days":exports.STATCACHE[req.body.path][3],
+				"minutes":exports.STATCACHE[req.body.path][4],
+				"seconds":exports.STATCACHE[req.body.path][5],
+				"cached":"true"
+			};
+			res.end( JSON.stringify(convertedObj) );
+			exports.STATCACHE[req.body.path]=0;
+			exports.TERMINAL_READY=true;
+			return ;
+		}
 		RECVFUNCT=recvFunctions.statRecv;
 		CUSTOMDATA={"res":res,"path":req.body.path,"port":port};
 		var cmd = String.fromCharCode(115)+String.fromCharCode(116)+String.fromCharCode(97)+String.fromCharCode(116)+String.fromCharCode(4);
@@ -559,7 +576,15 @@ else
 		res.end( "data" );
 	});
 
-	var server = app.listen(8081,process.argv[3], function () {
+	var webserverIp=process.argv[3];
+	var webserverPort=8081;
+	if (process.argv[3].indexOf(':') > -1)
+	{
+		webserverIp=process.argv[3].substr(0, process.argv[3].indexOf(':'));
+		webserverPort=process.argv[3].split(':').pop();
+	}
+	console.log("Trying to listen on ip "+webserverIp+" and port "+webserverPort);
+	var server = app.listen(webserverPort,webserverIp, function () {
 	  var host = server.address().address
 	  var port = server.address().port
 	  console.log("Amiga alsfs server webApi listening at http://%s:%s", host, port)
