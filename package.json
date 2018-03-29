@@ -27,12 +27,16 @@
     "express": "^4.15.4",
     "express-validator": "^4.2.1",
     "keypress": "^0.2.1",
+    "minimist": "^1.2.0",
+    "node-cache": "^4.2.0",
     "serialport": "^4.0.7",
     "shelljs": "^0.7.8",
     "sleep": "^5.1.1",
     "uuid": "^3.1.0",
     "validator": "^9.0.0",
-    "wait.for": "^0.6.6"
+    "wait.for": "^0.6.6",
+	"minimist": "^1.2.0",
+	"node-cache":"^4.2.0"
   },
   "apidoc": {
     "name": "Alsfs API",

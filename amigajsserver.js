@@ -6,6 +6,9 @@ var Queue = require('better-queue');
 const uuidv4 = require('uuid/v4');
 var execSync = require('child_process').execSync;
 var expressValidator = require('express-validator');
+const NodeCache = require( "node-cache" );
+var argv = require('minimist')(process.argv.slice(2));
+console.log(argv);
 
 var app = express();
 var jsonParser = bodyParser.json();
@@ -18,7 +21,16 @@ app.use(bodyParser.json({limit: '5mb'}));
 var recvFunctions=require('./recvFunct.js');
 
 exports.TERMINAL_READY = true;
-exports.STATCACHE = [];
+//exports.STATCACHE = [];
+
+stdTTL=100;
+if (argv.ttl>=0)
+{
+	stdTTL=argv.ttl;
+	if (stdTTL==0) console.log("Cache without expire set");
+	else console.log("Cache ttl set to "+stdTTL);
+}
+exports.STAT_CACHE = new NodeCache({ stdTTL: stdTTL, checkperiod: stdTTL });
 
 // Initialize the task queuer manager with retry each second
 var taskQueueManager = new Queue(function (task, cb) 
@@ -328,9 +340,13 @@ else
 		req.check('path','Invalid path').isLength({min:1});
 		if (ApiValidate(req,res)==false) return ;
 		exports.TERMINAL_READY=false;
-		if (exports.STATCACHE && exports.STATCACHE[req.body.path])
+		console.log(req.body.path);
+		//console.log(exports.STATCACHE[req.body.path]);
+		//if (exports.STATCACHE && exports.STATCACHE[req.body.path])
+		value = exports.STAT_CACHE.get(req.body.path);
+		if (argv.nocache==undefined && value!=undefined)
 		{
-			var convertedObj={
+			/*var convertedObj={
 				"st_size":exports.STATCACHE[req.body.path][0],
 				"blk_size":exports.STATCACHE[req.body.path][1],
 				"directory":exports.STATCACHE[req.body.path][2],
@@ -338,15 +354,62 @@ else
 				"minutes":exports.STATCACHE[req.body.path][4],
 				"seconds":exports.STATCACHE[req.body.path][5],
 				"cached":"true"
+			};*/
+			var convertedObj={
+				"st_size":value[0],
+				"blk_size":value[1],
+				"directory":value[2],
+				"days":value[3],
+				"minutes":value[4],
+				"seconds":value[5],
+				"cached":"true",
+				"ttl":exports.STAT_CACHE.getTtl(req.body.path)
 			};
 			res.end( JSON.stringify(convertedObj) );
-			exports.STATCACHE[req.body.path]=0;
+			//exports.STATCACHE[req.body.path]=0;
 			exports.TERMINAL_READY=true;
 			return ;
 		}
 		RECVFUNCT=recvFunctions.statRecv;
 		CUSTOMDATA={"res":res,"path":req.body.path,"port":port};
 		var cmd = String.fromCharCode(115)+String.fromCharCode(116)+String.fromCharCode(97)+String.fromCharCode(116)+String.fromCharCode(4);
+		console.log("Sending "+cmd);	
+		port.write(cmd,function () {
+			console.log("stat request sent");
+		});
+	});
+
+	/**
+	* @apiGroup Statfs
+	* @apiName statfs
+	* @apiParam {path} String Full amiga path (drawer of file) to stat.
+ 	* @apiExample {curl} Example usage
+ 	*  curl -i  -H "Content-Type: application/json" -X GET -d '{"path":"Games1:Utilities"}' http://10.0.0.10:8081/statfs
+	* HTTP/1.1 200 OK
+	* X-Powered-By: Express
+	* Date: Sun, 25 Mar 2018 15:17:15 GMT
+	* Connection: keep-alive
+	* Content-Length: 58
+	*
+	* {"blksize":512,"numblocks":3853510,"numblocksused":924359}
+ 	* @api {get} /statfs
+ 	* @apiName statfs
+ 	* @apiSuccess {Object} stat  Stat informations about the requested file or drawer.
+ 	* @apiSuccess {Number}  profile.blk_size Block size of the file.
+ 	* @apiSuccess {Number}  profile.st_numblocks Number of blocks for the filesystem.
+ 	* @apiSuccess {Number}  profile.st_numblocksused Number of used blocks for the filesystem.
+ 	* @apiVersion 1.0.0
+ 	* @apiDescription 
+ 	* Statfs returns informations about a filesystem inside the amiga.
+ 	*/
+	app.get('/statfs', jsonParser, function (req, res) {
+		req.check('path','Invalid path').isLength({min:1});
+		if (ApiValidate(req,res)==false) return ;
+		exports.TERMINAL_READY=false;
+		
+		RECVFUNCT=recvFunctions.statfsRecv;
+		CUSTOMDATA={"res":res,"path":req.body.path,"port":port};
+		var cmd = String.fromCharCode(115)+String.fromCharCode(116)+String.fromCharCode(97)+String.fromCharCode(116)+String.fromCharCode(102)+String.fromCharCode(115)+String.fromCharCode(4);
 		console.log("Sending "+cmd);	
 		port.write(cmd,function () {
 			console.log("stat request sent");
@@ -566,6 +629,59 @@ else
 			console.log("Delay request sent");
 			return ;
 		});
+	});
+
+	/**
+	* @apiGroup Keypress
+	* @apiName keypress
+	* @apiParam {path} String Key to press.
+ 	* @apiExample {curl} Example usage
+ 	*  curl -i  -H "Content-Type: application/json" -X GET -d '{"path":"Games1:Utilities"}' http://10.0.0.10:8081/statfs
+	* HTTP/1.1 200 OK
+	* X-Powered-By: Express
+	* Date: Sun, 25 Mar 2018 15:17:15 GMT
+	* Connection: keep-alive
+	* Content-Length: 58
+	*
+	* {"blksize":512,"numblocks":3853510,"numblocksused":924359}
+ 	* @api {get} /keypress
+ 	* @apiName keypress
+ 	* @apiVersion 1.0.0
+ 	* @apiDescription 
+ 	* Statfs Simulate a keypress on the amiga.
+ 	*/
+	app.get('/keypress', jsonParser, function (req, res) {
+		req.check('key','Invalid path').isLength({min:1,max:1});
+		if (ApiValidate(req,res)==false) return ;
+		exports.TERMINAL_READY=false;
+		
+		RECVFUNCT=recvFunctions.keypressRecv;
+		CUSTOMDATA={"res":res,"key":req.body.keyèress,"port":port};
+		var cmd = String.fromCharCode(107)+String.fromCharCode(101)+String.fromCharCode(121)+String.fromCharCode(112)+String.fromCharCode(114)+String.fromCharCode(101)+String.fromCharCode(115)+String.fromCharCode(115)+String.fromCharCode(4);
+		console.log("Sending "+cmd);	
+		port.write(cmd,function () {
+			console.log("keypress request sent");
+		});
+	});
+	app.get('/cache', jsonParser, function (req, res) {
+		/*var data=[];
+		for(var prop in exports.STATCACHE) 
+		{
+    		if(exports.STATCACHE.hasOwnProperty(prop))
+    		{
+        		//console.log(prop + ': ' + exports.STATCACHE[prop]);
+        		var convertedObj={"file":prop,"data":exports.STATCACHE[prop]};
+        		data.push(convertedObj);
+    		}	
+		}*/
+
+		res.end( JSON.stringify(exports.STAT_CACHE.keys()) )
+		//res.end( JSON.stringify(data) );
+	});
+
+	app.post('/cachedelete', jsonParser, function (req, res) {
+		exports.STAT_CACHE.flushAll();
+		res.end();
 	});
 
 	app.get('/exit', function (req, res) {

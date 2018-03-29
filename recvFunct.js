@@ -92,7 +92,14 @@ module.exports = {
 			var newObject = arrayConverted[i].split(' ');
 			console.log(newObject);
 			arrayConverted[i]=arrayConverted[i].substring(newObject[0].length+newObject[1].length+newObject[2].length+newObject[3].length+newObject[4].length+newObject[5].length+6);
-			server.STATCACHE[customdata.path+arrayConverted[i]]=newObject;
+			//server.STATCACHE[customdata.path+"/"+arrayConverted[i]]=newObject;
+			server.STAT_CACHE.set( customdata.path+"/"+arrayConverted[i], newObject, function( err, success )
+			{
+				if( !err && success )
+				{
+				  console.log( customdata.path+"/"+arrayConverted[i]+" cached" );
+				}
+			});
 		}
 		console.log(JSON.stringify(arrayConverted));
 		customdata.res.end(JSON.stringify(arrayConverted) );
@@ -104,7 +111,6 @@ module.exports = {
 	if (data[0]==49 && data[1]==0 && data[2]==3)
 	{
 		console.log("Stat for resource "+customdata.path+"...");
-		console.log(server.STATCACHE[customdata.path]);
 		var cmd="";			
 		for (var i=0;i<customdata.path.length;i++)
 		{
@@ -137,6 +143,61 @@ module.exports = {
 		else
 		{
 			var convertedObj={"st_size":arrayConverted[0],"blk_size":arrayConverted[1],"directory":arrayConverted[2],"days":arrayConverted[3],"minutes":arrayConverted[4],"seconds":arrayConverted[5]};
+			var newObject=[];
+			for (var i=0;i<6;i++)
+				newObject.push(arrayConverted[i]);
+
+			//server.STATCACHE[customdata.path]=newObject;
+			server.STAT_CACHE.set( customdata.path, newObject, function( err, success )
+			{
+				if( !err && success )
+				{
+				  console.log( customdata.path+"/"+arrayConverted[i]+" cached" );
+				}
+			});
+			customdata.res.end( JSON.stringify(convertedObj) );
+			server.TERMINAL_READY=true;
+		}
+	}
+  },
+  statfsRecv: function (data,customdata) {
+	console.log('Content: ' + data);
+	if (data[0]==49 && data[1]==0 && data[2]==3)
+	{
+		console.log("Statfs for resource "+customdata.path+"...");
+		//console.log(server.STATCACHE[customdata.path]);
+		var cmd="";			
+		for (var i=0;i<customdata.path.length;i++)
+		{
+			cmd+=customdata.path[i];
+		}
+		cmd+=String.fromCharCode(4);
+			
+		customdata.port.write(cmd,function () {
+			console.log("File name sent to statfs");
+		});		
+	}
+	else
+	{
+		var cont=0;
+		var converted="";
+		
+		while ( data[cont]!=3 )
+		{
+			if (data[cont]) converted+=String.fromCharCode(data[cont]);
+			cont++;
+		}
+		var arrayConverted = converted.split(' ');
+		if (arrayConverted.length<2)
+		{
+			console.log("Error, statfs not readable");
+			customdata.res.status(404);
+			customdata.res.end ();
+			server.TERMINAL_READY=true;
+		}
+		else
+		{
+			var convertedObj={"blksize":parseInt(arrayConverted[0]),"numblocks":parseInt(arrayConverted[1]),"numblocksused":parseInt(arrayConverted[2])};
 			customdata.res.end( JSON.stringify(convertedObj) );
 			server.TERMINAL_READY=true;
 		}
@@ -707,6 +768,16 @@ module.exports = {
 		customdata.res.end( cmd );
 		server.TERMINAL_READY=true;
 	}
+  },
+  keypressRecv: function (data,customdata) {
+	console.log('aaaa Richiesta: #' + data+"##");
+	var cmd="";
+	for (var i=0;i<data.length-1;i++)
+		cmd+=String.fromCharCode(data[i]);
+	console.log("Delay received: "+cmd);
+	customdata.res.status(200);
+	customdata.res.end( cmd );
+	server.TERMINAL_READY=true;
   },
   testFloppyDiskRecv: function (data,customdata) {
 	console.log('aaaa Richiesta: #' + data+"##");
