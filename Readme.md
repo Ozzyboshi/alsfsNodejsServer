@@ -1,14 +1,9 @@
-sudo usermod -a -G dialout ozzy
-close and restart session
+# alsfsNodejsServer
 
-docker run -d -v /home/ozzy/tarquinia/alsfsNodejsServer:/server --device=/dev/ttyUSB0 -p 8081:8081 -w /server node node amigajsserver /dev/ttyUSB0 0.0.0.0
-docker run --rm -it -v /home/ozzy/tarquinia/alsfsNodejsServer:/server --device=/dev/ttyUSB0 -p 8081:8081 -w /server node /bin/bash -c 'npm install && node amigajsserver /dev/ttyUSB0 0.0.0.0'
+AlsfsNodejsServer is part of a lager project which lets you control your amiga filesystem remotely using simple http request.
+AlsfsNodejsServer communicates with real Amigas by a null modem cable you have to buy or build, for this reason you will need a serial port available on your PC, if you don't have one it's possible to use an usb to serial converter.
+AlsfsNodejsServer works on Docker and Raspberry Pi.
 
-to run on a raspberry pi (tested on a raspberry pi model 1 with raspbian 7 wheezy)
+You can see some demostrations at http://alsfs.ozzyboshi.com/en/latest/demos/.
 
-get g++ and gcc 4.9 (you probably have to upgrade di jessie to do this)
-
-install serialport with sudo npm install serialport --unsafe-perm --build-from-source
-
-for a docker container inside a vm connected to a fs-uae virtual serial port: run the node image and install and lauch socat within the container, the --device docker flag won't work
-
+More documentation about the requirements and how it works at http://alsfs.ozzyboshi.com
