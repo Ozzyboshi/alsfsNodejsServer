@@ -44,7 +44,7 @@ var taskQueueManager = new Queue(function (task, cb)
 		//console.log("Terminale "+exports.TERMINAL_READY);
 		cb(null,exports.TERMINAL_READY);
 	},
-	preconditionRetryTimeout: 500
+	preconditionRetryTimeout: 50
 });
 
 
@@ -135,6 +135,14 @@ else
 
 	// Middleware used to queue tasks
 	app.use(taskQueuer);
+
+	//Enable cors
+	app.use(function(req, res, next) {
+		res.header('Access-Control-Allow-Origin', "*");
+		res.header('Access-Control-Allow-Methods','GET,PUT,POST,DELETE');
+		res.header('Access-Control-Allow-Headers', 'Content-Type');
+		next();
+	})
 
 	// Web routing starts here
 	
@@ -650,33 +658,22 @@ else
  	* @apiDescription 
  	* Statfs Simulate a keypress on the amiga.
  	*/
-	app.get('/keypress', jsonParser, function (req, res) {
-		req.check('key','Invalid path').isLength({min:1,max:1});
+	app.post('/keypress', jsonParser, function (req, res) {
+		req.check('key','Invalid key').isLength({min:2,max:2});
+		req.check('key2','Invalid key').isLength({min:2,max:2});
 		if (ApiValidate(req,res)==false) return ;
 		exports.TERMINAL_READY=false;
 		
 		RECVFUNCT=recvFunctions.keypressRecv;
-		CUSTOMDATA={"res":res,"key":req.body.keyèress,"port":port};
-		var cmd = String.fromCharCode(107)+String.fromCharCode(101)+String.fromCharCode(121)+String.fromCharCode(112)+String.fromCharCode(114)+String.fromCharCode(101)+String.fromCharCode(115)+String.fromCharCode(115)+String.fromCharCode(4);
+		CUSTOMDATA={"res":res,"key":req.body.key,"key2":req.body.key2,"port":port};
+		var cmd = String.fromCharCode(107)+String.fromCharCode(101)+String.fromCharCode(121)+String.fromCharCode(112)+String.fromCharCode(114)+String.fromCharCode(101)+String.fromCharCode(115)+String.fromCharCode(115)+req.body.key[0]+req.body.key[1]+req.body.key2[0]+req.body.key2[1]+String.fromCharCode(4);
 		console.log("Sending "+cmd);	
 		port.write(cmd,function () {
 			console.log("keypress request sent");
 		});
 	});
 	app.get('/cache', jsonParser, function (req, res) {
-		/*var data=[];
-		for(var prop in exports.STATCACHE) 
-		{
-    		if(exports.STATCACHE.hasOwnProperty(prop))
-    		{
-        		//console.log(prop + ': ' + exports.STATCACHE[prop]);
-        		var convertedObj={"file":prop,"data":exports.STATCACHE[prop]};
-        		data.push(convertedObj);
-    		}	
-		}*/
-
 		res.end( JSON.stringify(exports.STAT_CACHE.keys()) )
-		//res.end( JSON.stringify(data) );
 	});
 
 	app.post('/cachedelete', jsonParser, function (req, res) {

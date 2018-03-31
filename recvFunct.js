@@ -774,7 +774,7 @@ module.exports = {
 	var cmd="";
 	for (var i=0;i<data.length-1;i++)
 		cmd+=String.fromCharCode(data[i]);
-	console.log("Delay received: "+cmd);
+	console.log("Key pressed"+cmd);
 	customdata.res.status(200);
 	customdata.res.end( cmd );
 	server.TERMINAL_READY=true;
