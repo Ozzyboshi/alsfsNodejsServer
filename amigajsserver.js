@@ -8,7 +8,6 @@ var execSync = require('child_process').execSync;
 var expressValidator = require('express-validator');
 const NodeCache = require( "node-cache" );
 var argv = require('minimist')(process.argv.slice(2));
-console.log(argv);
 
 var app = express();
 var jsonParser = bodyParser.json();
@@ -50,13 +49,17 @@ var taskQueueManager = new Queue(function (task, cb)
 
 if (process.argv.length<4) 
 {
-	console.log("Usage: amigajsserver serialfile ip_to_bind (ex. amigajsserver /dev/ttyUSB0 192.168.137.3)");
+	console.log("Usage: amigajsserver serialfile ip_to_bind[:port] options (ex. amigajsserver /dev/ttyUSB0 192.168.137.3:8080)");
+	console.log("Options :");
+	console.log("	--ttl SECONDS : Seconds used to expire cached files, set 0 to never expire, default 100");
+	console.log("	--bootstrap : Start bootstrap mode to copy alsfssrv into a real Amiga using a null modem cable attached to the Amiga serial port");
+	console.log("	--nocache : Dont cache file info from the Amiga (slower)");
 	process.exit(1);
 }
 
 // Set serial porto to 19200
 var command="stty 19200 -parenb cs8 crtscts -ixon -ixoff raw iutf8 -F "+process.argv[2];
-console.log("Send "+command);
+// console.log("Send "+command);
 execSync(command);
 
 // Start of bootstrap mode
@@ -700,7 +703,7 @@ else
 	var server = app.listen(webserverPort,webserverIp, function () {
 	  var host = server.address().address
 	  var port = server.address().port
-	  console.log("Amiga alsfs server webApi listening at http://%s:%s", host, port)
+	  console.log("Amiga alsfs server webApi listening at http://%s:%s - Press CTRL+C to exit", host, port)
 	});
 	server.timeout = 0;
 }

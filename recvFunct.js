@@ -298,6 +298,7 @@ module.exports = {
 	 else if (data[0]==53 && data[1]==0 && data[2]==3)
 	 {
 	 	console.log("Got confirmation that binary data is sent, http response outgoing...");
+	 	server.STAT_CACHE.del(customdata.amigaFilename);
 	 	customdata.res.end( "OK" );
 	 	server.TERMINAL_READY=true;
 	 }
@@ -420,6 +421,8 @@ module.exports = {
 	else if (data[0]==79 && data[1]==75 && data[2]==0 && data[3]==3)
 	{
 		console.log("File or Drawer renamed");
+		console.log("Remove "+customdata.amigaOldFilename+ " from cache");
+		server.STAT_CACHE.del(customdata.amigaOldFilename);
 		customdata.res.end( "OK" );
 		server.TERMINAL_READY=true;
 	}
@@ -902,7 +905,8 @@ module.exports = {
 	// Send binary data
 	else if (data[0]==79 && data[1]==75 && data[2]==0 && data[3]==3)
 	{
-		console.log("File deleted");
+		console.log("File "+customdata.amigaFilename+" deleted");
+		server.STAT_CACHE.del(customdata.amigaFilename);
 		customdata.res.end( "OK" );
 		server.TERMINAL_READY=true;
 	}
